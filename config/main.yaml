@@ -1,5 +1,6 @@
 ---
 providers:
+#    default_ttl: 600
 
 processors:
   spf:
