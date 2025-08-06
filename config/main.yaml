@@ -1,1 +1,9 @@
+---
+providers:
 
+processors:
+  spf:
+    class: octodns.processor.spf.SpfDnsLookupProcessor
+
+zones:
+  patchworklabs.org:
