@@ -1,0 +1,8 @@
+#!/bin/sh
+
+FORCE_FLAG=""
+if [ "$1" = "--force" ]; then
+    FORCE_FLAG="--force"
+fi
+
+octodns-sync --config-file=./config/main.yaml --doit $FORCE_FLAG
