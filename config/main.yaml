@@ -1,10 +1,17 @@
 ---
 providers:
-#    default_ttl: 600
-
-processors:
-  spf:
-    class: octodns.processor.spf.SpfDnsLookupProcessor
+  config:
+    class: octodns.provider.yaml.YamlProvider
+    directory: ./
+    enforce_order: True
+    default_ttl: 600
+  hetzner:
+    class: octodns_hetzner.HetznerProvider
+    token: env/HETZNER_KEY
 
 zones:
-  patchworklabs.org:
+  patchworklabs.org.:
+    sources:
+      - config
+    targets:
+      - hetzner

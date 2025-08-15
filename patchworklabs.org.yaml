@@ -1,0 +1,35 @@
+"":
+  - ttl: 1
+    type: MX
+    values:
+      - exchange: aspmx.l.google.com.
+        preference: 1
+      - exchange: alt1.aspmx.l.google.com.
+        preference: 5
+      - exchange: alt2.aspmx.l.google.com.
+        preference: 5
+      - exchange: alt3.aspmx.l.google.com.
+        preference: 10
+      - exchange: alt4.aspmx.l.google.com.
+        preference: 10
+  - ttl: 1
+    type: TXT
+    values:
+      - google-site-verification=dTZpncFCw29CV7tXrZ7O9zUfq0wVPWkdAcUT6j7_vQ4
+      - openpgp4fpr:00E643C21FAC965FFB28D3B714D0D45A1DADAAFA
+      - Owned by Jasper Mayone (jaspermayone.com)
+
+_dmarc:
+  ttl: 1
+  type: TXT
+  value: v=DMARC1\; p=quarantine\; rua=mailto:dmark_reports@patchworklabs.org\; pct=100\; ruf=mailto:dmark_reports@patchworklabs.org\; adkim=s\; aspf=s
+
+openpgpkey:
+  ttl: 300
+  type: CNAME
+  value: wkd.keys.openpgp.org.
+
+_atproto:
+  ttl: 1
+  type: TXT
+  value: did=did:plc:bpd7j2a34mmnyu7t64gzptg7
