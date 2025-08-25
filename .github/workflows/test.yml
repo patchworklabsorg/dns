@@ -1,15 +1,15 @@
 name: Dry Run DNS
 
 on:
-  - push
-  - pull_request
-  - workflow_dispatch:
-      inputs:
-        force:
-          description: "Use --force flag"
-          required: false
-          type: boolean
-          default: false
+  push:
+  pull_request:
+  workflow_dispatch:
+    inputs:
+      force:
+        description: "Use --force flag"
+        required: false
+        type: boolean
+        default: false
 
 jobs:
   octodns:
