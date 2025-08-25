@@ -21,8 +21,8 @@ jobs:
         with:
           python-version: "3"
           cache: "pip" # caches pip dependencies
-      - name: Install OctoDNS
-        run: pip install 'octodns==0.9.10'
+      - name: Install dependencies
+        run: pip install -r requirements.txt
       - name: Sync w/ production DNS providers
         run: ./bin/sync ${{ inputs.force && '--force' || '' }}
         env:
