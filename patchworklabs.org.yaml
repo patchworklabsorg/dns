@@ -19,6 +19,11 @@
       - openpgp4fpr:00E643C21FAC965FFB28D3B714D0D45A1DADAAFA
       - Owned by Jasper Mayone (jaspermayone.com)
 
+_atproto:
+  ttl: 1
+  type: TXT
+  value: did=did:plc:bpd7j2a34mmnyu7t64gzptg7
+
 _dmarc:
   ttl: 1
   type: TXT
@@ -28,8 +33,3 @@ openpgpkey:
   ttl: 300
   type: CNAME
   value: wkd.keys.openpgp.org.
-
-_atproto:
-  ttl: 1
-  type: TXT
-  value: did=did:plc:bpd7j2a34mmnyu7t64gzptg7
