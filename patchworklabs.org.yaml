@@ -15,7 +15,7 @@
   - ttl: 1
     type: TXT
     values:
-      - google-site-verification=dTZpncFCw29CV7tXrZ7O9zUfq0wVPWkdAcUT6j7_vQ4
+      - google-site-verification=OjTBuEBXcUdIOVzjidh1sCMfvAYvabpQWnkGfFFQQA4
       - openpgp4fpr:00E643C21FAC965FFB28D3B714D0D45A1DADAAFA
       - Owned by Jasper Mayone (jaspermayone.com)
 
