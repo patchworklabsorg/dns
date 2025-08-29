@@ -17,6 +17,7 @@
     values:
       - google-site-verification=dWzvYUBk_oc6spUhOFmqPl8wYeRMvpfhhARS1tb21ag
       - Owned by Patchwork Labs Inc (patchworklabs.org)
+      - v=spf1 include:_spf.google.com ~all
 
 _atproto:
   ttl: 1
