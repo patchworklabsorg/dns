@@ -19,11 +19,6 @@
       - Owned by Patchwork Labs Inc (patchworklabs.org) a registered 501(c)(3) nonprofit organization.
       - v=spf1 include:_spf.google.com ~all
 
-_atproto:
-  ttl: 1
-  type: TXT
-  value: did=did:plc:bpd7j2a34mmnyu7t64gzptg7
-
 _dmarc:
   ttl: 1
   type: TXT
