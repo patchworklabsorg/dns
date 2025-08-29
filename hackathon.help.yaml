@@ -15,7 +15,7 @@
   - ttl: 1
     type: TXT
     values:
-      # - google-site-verification=OjTBuEBXcUdIOVzjidh1sCMfvAYvabpQWnkGfFFQQA4
+      - google-site-verification=dWzvYUBk_oc6spUhOFmqPl8wYeRMvpfhhARS1tb21ag
       - Owned by Patchork Labs Inc (patchworklabs.org)
 
 _atproto:
