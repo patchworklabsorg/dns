@@ -15,7 +15,7 @@
   - ttl: 1
     type: TXT
     values:
-      - google-site-verification=OjTBuEBXcUdIOVzjidh1sCMfvAYvabpQWnkGfFFQQA4
+      - google-site-verification=dWzvYUBk_oc6spUhOFmqPl8wYeRMvpfhhARS1tb21ag
       - Owned by Patchwork Labs Inc (patchworklabs.org) a registered 501(c)(3) nonprofit organization.
       - v=spf1 include:_spf.google.com ~all
 
