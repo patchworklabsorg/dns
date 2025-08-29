@@ -16,7 +16,7 @@ zones:
     targets:
       - hetzner
 
-  hackathon.help:
+  hackathon.help.:
     sources:
       - config
     targets:
