@@ -1,0 +1,29 @@
+"":
+  - ttl: 1
+    type: MX
+    values:
+      - exchange: aspmx.l.google.com.
+        preference: 1
+      - exchange: alt1.aspmx.l.google.com.
+        preference: 5
+      - exchange: alt2.aspmx.l.google.com.
+        preference: 5
+      - exchange: alt3.aspmx.l.google.com.
+        preference: 10
+      - exchange: alt4.aspmx.l.google.com.
+        preference: 10
+  - ttl: 1
+    type: TXT
+    values:
+      # - google-site-verification=OjTBuEBXcUdIOVzjidh1sCMfvAYvabpQWnkGfFFQQA4
+      - Owned by Patchork Labs Inc (patchworklabs.org)
+
+_atproto:
+  ttl: 1
+  type: TXT
+  value: did=did:plc:bpd7j2a34mmnyu7t64gzptg7
+
+_dmarc:
+  ttl: 1
+  type: TXT
+  value: v=DMARC1\; p=quarantine\; rua=mailto:dmark_reports@hackathon.help\; pct=100\; ruf=mailto:dmark_reports@hackathon.help\; adkim=s\; aspf=s
