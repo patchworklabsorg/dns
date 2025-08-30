@@ -24,6 +24,12 @@ _atproto:
   type: TXT
   value: did=did:plc:bpd7j2a34mmnyu7t64gzptg7
 
+# Google Workspace DKIM authentication
+google._domainkey:
+  ttl: 3600
+  type: TXT
+  value: v=DKIM1; k=rsa; p=MIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKCAQEAzEuGHXgOxIj0qk83hV4ajl/OIpXbhE/MTKhXU1VZDBISO/+yBCQsVyq1j4F13tWxUpYLlw78OJl+7TlAyZ4llYY5z2Oj+EiAIQZCRBLmKN7zDpnbwbiM4hfam5vnhCvFwdgg0aKUY221T/Pe5Mjz11e0VtyOJ3D3enPId010bi99p93Dimf+rFo9YFwps7U/V4O5rWaRyG9snFcl9tshvKTgQ6OoHEvLbvQIU1QTiXR6oHAI5KP/8BzA26djgIKqNuHaU9S70KSVUH/9CBSAjHP50j4i4rGGEr6PopNjxQxN5owwu2jUDEIOrv13RLpNPISu1NaPCgMnGVyfsQ77yQIDAQAB
+
 _dmarc:
   ttl: 1
   type: TXT
