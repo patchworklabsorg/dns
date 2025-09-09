@@ -30,6 +30,11 @@ _dmarc:
   type: TXT
   value: v=DMARC1\; p=quarantine\; rua=mailto:dmark_reports@patchworklabs.org\; pct=100\; ruf=mailto:dmark_reports@patchworklabs.org\; adkim=s\; aspf=s
 
+_gh-patchworklabsorg-o:
+  ttl: 3600
+  type: TXT
+  value: cee2c56f89
+
 # Google Workspace DKIM authentication
 google._domainkey:
   ttl: 3600
