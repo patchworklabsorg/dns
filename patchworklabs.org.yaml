@@ -18,6 +18,7 @@
       - google-site-verification=OjTBuEBXcUdIOVzjidh1sCMfvAYvabpQWnkGfFFQQA4
       - Owned by Patchwork Labs Inc (patchworklabs.org) a registered 501(c)(3) nonprofit organization.
       - v=spf1 include:_spf.google.com ~all
+      - slack-domain-verification=ST5I2hJgX8CutN19stoedtub8ODxC2KwlHcbpKtb
 
 _atproto:
   ttl: 1
