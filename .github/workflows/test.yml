@@ -1,7 +1,6 @@
 name: Dry Run DNS
 
 on:
-  push:
   pull_request:
   workflow_dispatch:
     inputs:
