@@ -46,3 +46,13 @@ openpgpkey:
   ttl: 300
   type: CNAME
   value: wkd.keys.openpgp.org.
+
+forms:
+  ttl: 1
+  type: A
+  value: 65.19.76.238
+
+admin.forms:
+  ttl: 1
+  type: A
+  value: 65.19.76.238
