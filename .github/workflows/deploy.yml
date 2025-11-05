@@ -26,4 +26,4 @@ jobs:
       - name: Sync w/ production DNS providers
         run: ./bin/sync ${{ inputs.force && '--force' || '' }}
         env:
-          HETZNER_KEY: ${{ secrets.HETZNER_KEY }}
+          CLOUDFLARE_TOKEN: ${{ secrets.CLOUDFLARE_TOKEN }}
