@@ -20,10 +20,10 @@
       - v=spf1 include:_spf.google.com ~all
       - slack-domain-verification=ST5I2hJgX8CutN19stoedtub8ODxC2KwlHcbpKtb
       - stripe-verification=2EACE39B000887BB0491EB25506F91621A1E1097C9DE7C5C7C9E4E9F8701137E
-  - ttl: 1
-    octodns:
+  - octodns:
       cloudflare:
         proxied: true
+    ttl: 1
     type: A
     value: 216.198.79.1
 
@@ -43,18 +43,18 @@ _gh-patchworklabsorg-o:
   value: cee2c56f89
 
 admin.forms:
-  ttl: 1
   octodns:
       cloudflare:
         proxied: true
+  ttl: 1
   type: A
   value: 65.19.76.238
 
 forms:
-  ttl: 1
   octodns:
       cloudflare:
         proxied: true
+  ttl: 1
   type: A
   value: 65.19.76.238
 
@@ -75,9 +75,9 @@ openpgpkey:
   value: wkd.keys.openpgp.org.
 
 www:
-  ttl: 1
   octodns:
       cloudflare:
         proxied: true
+  ttl: 1
   type: CNAME
   value: 52fd2b2210caa11f.vercel-dns-017.com.
