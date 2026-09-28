@@ -8,33 +8,39 @@ This is a DNS management repository using OctoDNS to manage DNS records for two 
 - `patchworklabs.org`
 - `hackathon.help`
 
-The repository uses OctoDNS with Hetzner as the DNS provider and YAML configuration files to define DNS records declaratively.
+The repository uses OctoDNS with Cloudflare as the DNS provider and YAML configuration files to define DNS records declaratively. The setup mirrors `WITCodingClub/dns`. `README.md`, `CONTRIBUTING.md` and `docs/runbook.md` are the full reference.
 
 ## Architecture
 
-- **Configuration**: `config/main.yaml` defines providers and zone mappings
-- **DNS Records**: Domain-specific YAML files (`patchworklabs.org.yaml`, `hackathon.help.yaml`) contain DNS record definitions
-- **Scripts**: Shell scripts in `bin/` directory handle DNS operations
-- **Dependencies**: Python dependencies managed via `requirements.txt` with OctoDNS ecosystem
+- **Configuration**: `config/config.yaml` defines providers, processors and zone mappings. `enforce_order` with `order_mode: natural` is on.
+- **DNS Records**: Domain-specific YAML files (`patchworklabs.org.yaml`, `hackathon.help.yaml`) contain DNS record definitions. Every new record needs an owner email in a comment on the same line as its name.
+- **Scripts**: Shell scripts in `bin/` handle DNS operations. They read the zone list from `config/config.yaml` through `bin/zones`.
+- **Tools**: `tools/merge_live.py` merges live Cloudflare state back into the zone files and keeps comments. Tests are in `tools/test_merge_live.py`.
+- **Workflows**: `validate` (no secrets), `plan` (`pull_request_target`, posts the plan and checks drift), `deploy` (push to `main`), `sync-from-cloudflare` (nightly).
+- **Dependencies**: Python dependencies pinned in `requirements.txt`.
 
 ## Essential Commands
 
 ### DNS Operations
-- **Dry run (preview changes)**: `./bin/dry-run`
-- **Dry run with force**: `./bin/dry-run-force`
-- **Apply DNS changes**: `./bin/sync`
-- **Apply DNS changes with force**: `./bin/sync-force`
+- **Validate (no token needed)**: `./bin/validate`
+- **List zones**: `./bin/zones`
+- **Plan (preview changes)**: `./bin/plan` (`./bin/dry-run` is an alias)
+- **Dump live Cloudflare state**: `./bin/dump .live`
+- **Apply DNS changes**: `./bin/sync`. Only the `deploy` workflow should run it.
+- **Run tool tests**: `python -m unittest discover -s tools -p 'test_*.py' -v`
 
 ### Environment Setup
 ```bash
-pip install -r requirements.txt
-export HETZNER_KEY=your_hetzner_api_key
+python3 -m venv env
+./env/bin/pip install -r requirements.txt
+export CLOUDFLARE_TOKEN=YOUR_READ_ONLY_TOKEN_HERE
 ```
 
 ## Configuration Structure
 
-- **Provider Config**: Hetzner DNS provider configured in `config/main.yaml` with API token from `HETZNER_KEY` environment variable
-- **Zone Sources**: Both domains use YAML provider as source and Hetzner as target
+- **Provider Config**: Cloudflare provider configured in `config/config.yaml` with API token from the `CLOUDFLARE_TOKEN` environment variable
+- **Zone Sources**: Both domains use the YAML provider as source and Cloudflare as target
+- **Meta record**: The `meta` processor writes an `octodns-meta` TXT record on each deploy. Do not add it to a zone file.
 - **DNS Records**: Defined in domain-specific YAML files with standard DNS record types (MX, TXT, CNAME, etc.)
 
 ## TTL Management Standards
@@ -81,7 +87,8 @@ mx:
 
 ## Important Notes
 
-- Always run dry-run commands before applying changes to preview DNS modifications
+- Always run `./bin/plan` before applying changes to preview DNS modifications
+- Never change DNS in the Cloudflare dashboard. Use a pull request. The nightly sync opens a `cloudflare-sync` pull request for any dashboard change.
 - The `--force` flag bypasses safety checks and should be used carefully
 - DNS records include critical configurations like DMARC, Google Site Verification, and email routing
 - Both domains are owned by Patchwork Labs Inc with similar DNS configurations

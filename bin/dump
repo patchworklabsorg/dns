@@ -1,0 +1,24 @@
+#!/bin/sh
+# Dump the live Cloudflare state into a directory as octoDNS zone files.
+#
+#   ./bin/dump .live
+#
+# This is what the nightly Cloudflare sync uses to find records that somebody
+# added or edited in the Cloudflare dashboard. It never writes to the zone
+# files at the repository root. Use tools/merge_live.py for that.
+#
+# Needs CLOUDFLARE_TOKEN in the environment. A read-only token is enough.
+set -eu
+
+out="${1:-.live}"
+mkdir -p "$out"
+
+"$(dirname "$0")/zones" | while read -r zone; do
+  [ -n "$zone" ] || continue
+  echo "dumping $zone"
+  octodns-dump \
+    --config-file=./config/config.yaml \
+    --output-dir="$out" \
+    --lenient \
+    "$zone" cloudflare
+done

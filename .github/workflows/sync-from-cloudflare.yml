@@ -1,0 +1,143 @@
+name: sync-from-cloudflare
+
+# Pulls records that somebody added or changed in the Cloudflare dashboard back
+# into the zone files, and opens a pull request with them.
+#
+# Without this, a manual change in Cloudflare is silently undone the next time
+# somebody merges a pull request. With it, the change shows up as a reviewable
+# diff, keeps its history, and can be given an owner.
+#
+# The pull request is opened by a GitHub App, not by a person and not by the
+# built-in GITHUB_TOKEN. Both of those matter:
+#
+#   * GitHub does not start workflows for commits pushed with GITHUB_TOKEN, so
+#     a pull request opened that way gets no checks and can never satisfy a
+#     required check. An App installation token does start them.
+#   * Nobody can approve their own pull request. If a person's token opened
+#     this, that person could never review it, which on a small team
+#     leaves exactly one possible reviewer. The App is not a person, so anybody
+#     on the team can approve.
+#
+# See docs/runbook.md for how to create the App.
+
+on:
+  schedule:
+    # 07:17 UTC, which is the small hours in US Eastern time. The odd minute keeps this
+    # off the top of the hour, when GitHub's scheduler is busiest.
+    - cron: '17 7 * * *'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: sync-from-cloudflare
+  cancel-in-progress: false
+
+jobs:
+  sync:
+    name: pull cloudflare into git
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+      pull-requests: write
+      issues: write
+    steps:
+      - name: Get a token for the bot
+        id: bot
+        uses: actions/create-github-app-token@v3
+        with:
+          # The client id is an identifier, not a credential, so it lives in a
+          # repository variable rather than a secret. Keeping it out of the
+          # secret store also keeps it out of the log masker, which makes a
+          # failure here readable.
+          client-id: ${{ vars.DNS_BOT_CLIENT_ID }}
+          private-key: ${{ secrets.DNS_BOT_PRIVATE_KEY }}
+
+      - uses: actions/checkout@v7
+        with:
+          token: ${{ steps.bot.outputs.token }}
+
+      - uses: actions/setup-python@v7
+        with:
+          python-version: '3.12'
+          cache: pip
+
+      - name: Install octoDNS
+        run: pip install -r requirements.txt
+
+      - name: Dump the live Cloudflare zones
+        env:
+          CLOUDFLARE_TOKEN: ${{ secrets.CLOUDFLARE_TOKEN_READ_ONLY }}
+        run: ./bin/dump .live
+
+      - name: Merge Cloudflare into the zone files
+        run: |
+          set -eu
+          zones=$(./bin/zones | sed 's/^/--zone /' | tr '\n' ' ')
+
+          # shellcheck disable=SC2086
+          python tools/merge_live.py \
+            --live-dir .live \
+            --repo-dir . \
+            --summary-out summary.md \
+            $zones
+          rm -rf .live
+
+      - name: Open or update the pull request
+        env:
+          GH_TOKEN: ${{ steps.bot.outputs.token }}
+          APP_SLUG: ${{ steps.bot.outputs.app-slug }}
+        run: |
+          set -eu
+
+          if git diff --quiet -- ./*.yaml; then
+            echo "Cloudflare matches the zone files. Nothing to do."
+            rm -f summary.md
+            exit 0
+          fi
+
+          gh label create cloudflare-drift \
+            --color FBCA04 \
+            --description "Records changed in the Cloudflare dashboard" \
+            --force
+
+          # Commit as the App. The ruleset has
+          # require_extra_approval_for_unattributed_changes turned on, so the
+          # commit author has to be the identity that pushed it.
+          bot_id=$(gh api "users/$APP_SLUG[bot]" --jq .id)
+          git config user.name "$APP_SLUG[bot]"
+          git config user.email "$bot_id+$APP_SLUG[bot]@users.noreply.github.com"
+          git switch -C cloudflare-sync
+          git add -- ./*.yaml
+          git commit -m 'chore: pull manual Cloudflare changes into the zone files'
+          git push --force origin cloudflare-sync
+
+          {
+            printf 'Somebody changed DNS in the Cloudflare dashboard instead '
+            printf 'of opening a pull request. This brings the zone files back '
+            printf 'in line so that the next deploy does not undo the change.\n\n'
+            cat summary.md
+            printf '\n### Before you merge\n\n'
+            printf -- '- Give every record marked `TODO owner unknown` an owner, '
+            printf 'in a comment on the same line.\n'
+            printf -- '- Check that each change is one Patchwork wants to keep.\n'
+            printf -- '- If a change should not have been made, revert it in '
+            printf 'Cloudflare and close this pull request. It reopens tomorrow '
+            printf 'if the change is still there.\n'
+          } > body.md
+
+          number=$(gh pr list --head cloudflare-sync --state open \
+            --json number --jq '.[0].number // empty')
+          if [ -n "$number" ]; then
+            gh pr edit "$number" --body-file body.md
+            echo "Updated pull request #$number."
+          else
+            gh pr create \
+              --title 'chore: pull manual Cloudflare changes into the zone files' \
+              --body-file body.md \
+              --base main \
+              --head cloudflare-sync \
+              --label cloudflare-drift
+          fi
+          rm -f summary.md body.md

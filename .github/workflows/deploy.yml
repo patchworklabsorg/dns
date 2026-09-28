@@ -1,29 +1,100 @@
-name: Sync DNS
+name: deploy
+
+# Applies the zone files to Cloudflare. This is the only workflow that holds a
+# Cloudflare token with write access.
 
 on:
+  push:
+    branches: [main]
+    paths:
+      - '*.yaml'
+      - 'config/**'
+      - 'bin/**'
+      - 'requirements.txt'
+      - '.github/workflows/deploy.yml'
   workflow_dispatch:
     inputs:
-      force:
-        description: "Use --force flag"
-        required: false
+      allow_mass_delete:
+        description: 'Apply even when the plan deletes more records than the limit'
         type: boolean
         default: false
-  push:
-    branches:
-      - main
+
+permissions:
+  contents: read
+
+env:
+  # octoDNS refuses a plan that deletes more than 30% of a zone, but only for a
+  # zone that already has at least 10 records. MIN_EXISTING_RECORDS is a
+  # constant in octoDNS and cannot be configured. hackathon.help has fewer records
+  # than that, so octoDNS would delete every one of them without complaining.
+  # This is the guard for that case.
+  MAX_DELETES: '3'
+
+# Never let two deploys apply to Cloudflare at the same time, and never cancel
+# one halfway through.
+concurrency:
+  group: deploy-cloudflare
+  cancel-in-progress: false
 
 jobs:
-  octodns:
+  deploy:
+    name: apply to cloudflare
     runs-on: ubuntu-latest
+    # Add reviewers or a wait timer to this environment in the repository
+    # settings if you ever want a second pair of eyes between merge and apply.
+    environment: production
     steps:
-      - uses: actions/checkout@v4
-      - uses: actions/setup-python@v5
+      - uses: actions/checkout@v7
+
+      - uses: actions/setup-python@v7
         with:
-          python-version: "3"
-          cache: "pip" # caches pip dependencies
-      - name: Install dependencies
+          python-version: '3.12'
+          cache: pip
+
+      - name: Install octoDNS
         run: pip install -r requirements.txt
-      - name: Sync w/ production DNS providers
-        run: ./bin/sync ${{ inputs.force && '--force' || '' }}
+
+      - name: Show what will be applied
         env:
           CLOUDFLARE_TOKEN: ${{ secrets.CLOUDFLARE_TOKEN }}
+        run: |
+          set -eu
+          ./bin/plan > plan.md
+          cat plan.md >> "$GITHUB_STEP_SUMMARY"
+          cat plan.md
+
+      - name: Refuse a mass delete
+        if: inputs.allow_mass_delete != true
+        run: |
+          set -eu
+          deletes=$(grep -c '^| Delete |' plan.md || true)
+          echo "The plan deletes $deletes records. The limit is $MAX_DELETES."
+
+          if [ "$deletes" -gt "$MAX_DELETES" ]; then
+            echo "::error title=Too many deletes::The plan deletes $deletes records, and the limit is $MAX_DELETES. Nothing has been applied."
+            echo
+            echo "Read the plan in the job summary. If every delete is correct,"
+            echo "run this workflow by hand with 'allow_mass_delete' turned on:"
+            echo
+            echo "  gh workflow run deploy.yml -f allow_mass_delete=true"
+            exit 1
+          fi
+
+      - name: Apply to Cloudflare
+        env:
+          CLOUDFLARE_TOKEN: ${{ secrets.CLOUDFLARE_TOKEN }}
+        run: ./bin/sync
+
+      - name: Confirm Cloudflare now matches main
+        env:
+          CLOUDFLARE_TOKEN: ${{ secrets.CLOUDFLARE_TOKEN }}
+        run: |
+          set -eu
+          ./bin/plan > after.md
+          if grep -q 'No changes were planned' after.md; then
+            echo "Cloudflare matches main."
+            exit 0
+          fi
+          echo "::error title=Deploy did not finish::Cloudflare still does not match main after the apply."
+          cat after.md
+          exit 1

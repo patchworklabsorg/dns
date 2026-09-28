@@ -1,1 +1,17 @@
+# Every change here reaches production DNS, so every change needs an approving
+# review from a code owner.
+#
+# https://github.com/orgs/patchworklabsorg/teams/infra
+# https://github.com/orgs/patchworklabsorg/teams/dns-frens
+#
+# Both teams must keep write access to this repository, otherwise GitHub
+# ignores these rules.
+
 * @patchworklabsorg/infra @patchworklabsorg/dns-frens
+
+# These decide what gets applied and how. A mistake here is worse than a
+# mistake in a single record, so they are listed again to make that clear.
+/.github/ @patchworklabsorg/infra @patchworklabsorg/dns-frens
+/bin/ @patchworklabsorg/infra @patchworklabsorg/dns-frens
+/config/ @patchworklabsorg/infra @patchworklabsorg/dns-frens
+/tools/ @patchworklabsorg/infra @patchworklabsorg/dns-frens

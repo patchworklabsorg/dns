@@ -1,0 +1,31 @@
+name: DNS problem
+description: Report a subdomain that does not resolve or points somewhere wrong.
+title: "[problem] "
+labels: ["bug"]
+body:
+  - type: input
+    id: name
+    attributes:
+      label: Which name is wrong?
+      placeholder: docs.patchworklabs.org
+    validations:
+      required: true
+
+  - type: textarea
+    id: expected
+    attributes:
+      label: What did you expect, and what happened instead?
+    validations:
+      required: true
+
+  - type: textarea
+    id: dig
+    attributes:
+      label: Output of dig
+      description: |
+        Run this and paste the result.
+
+            dig +short docs.patchworklabs.org
+      render: shell
+    validations:
+      required: false

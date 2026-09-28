@@ -1,0 +1,10 @@
+#!/bin/sh
+# Print every zone named in config/config.yaml, one per line, so that scripts
+# and workflows never keep their own copy of the list.
+set -eu
+
+exec python3 -c "
+import yaml
+with open('config/config.yaml') as fh:
+    print('\n'.join(yaml.safe_load(fh)['zones']))
+"

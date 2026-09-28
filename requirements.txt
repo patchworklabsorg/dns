@@ -1,17 +1,13 @@
-certifi==2025.10.5
-charset-normalizer==3.4.4
-dnspython==2.8.0
-fqdn==1.5.1
-idna==3.11
+# Pinned so that a nightly job and a pull request plan always agree.
+# Bump with a pull request, never in place.
+octodns==1.22.0
+octodns-cloudflare==1.2.0
+
+# Used by tools/merge_live.py to merge Cloudflare state back into the zone
+# files without destroying the ownership comments.
+ruamel.yaml==0.19.1
+
+# Imported directly by tools/merge_live.py so that it sorts records exactly
+# the way octoDNS's enforce_order checks them. It arrives with octodns anyway,
+# but a direct import deserves a direct pin.
 natsort==8.4.0
-ns1-python==0.25.0
-octodns==1.14.0
-octodns-cloudflare==1.0.0
-octodns-hetzner==1.0.0
-octodns-ns1==1.0.1
-octodns-spf==1.0.0
-python-dateutil==2.9.0.post0
-PyYAML==6.0.3
-requests==2.32.5
-six==1.17.0
-urllib3==2.5.0

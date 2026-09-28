@@ -1,0 +1,12 @@
+#!/bin/sh
+# Show what a deploy would change, without changing anything.
+#
+# The plan is written to stdout as Markdown, so it can be captured and posted
+# as a pull request comment. octoDNS log output goes to stderr.
+#
+#   ./bin/plan > plan.md
+#
+# Needs CLOUDFLARE_TOKEN in the environment. A read-only token is enough.
+set -eu
+
+exec octodns-sync --config-file=./config/config.yaml "$@"

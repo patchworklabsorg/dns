@@ -1,8 +1,10 @@
 #!/bin/sh
+# Apply the zone files to Cloudflare. This changes production DNS.
+#
+# Only .github/workflows/deploy.yml should run this. Run it by hand only when
+# you are recovering from a failed deploy, and read docs/runbook.md first.
+#
+# Needs CLOUDFLARE_TOKEN in the environment with write access.
+set -eu
 
-FORCE_FLAG=""
-if [ "$1" = "--force" ]; then
-    FORCE_FLAG="--force"
-fi
-
-octodns-sync --config-file=./config/main.yaml --doit $FORCE_FLAG
+exec octodns-sync --config-file=./config/config.yaml --doit "$@"

@@ -1,0 +1,151 @@
+name: plan
+
+# Shows a reviewer exactly which DNS records a pull request would change, and
+# blocks the merge when Cloudflare has drifted away from main.
+#
+# SECURITY. This workflow uses `pull_request_target`, so it can read secrets
+# even on a pull request from a fork. That is only safe because it never runs
+# code that came from the fork:
+#
+#   1. It checks out main, which is trusted, and runs main's scripts.
+#   2. From the fork it copies only the zone files at the repository root.
+#      Those are data. octoDNS parses them, it does not execute them.
+#
+# Do not add a step that runs a script, a Makefile, an action, or a dependency
+# install from the pull request. That would hand the Cloudflare token to
+# whoever opened the pull request.
+
+on:
+  pull_request_target:
+    types: [opened, synchronize, reopened]
+
+permissions:
+  contents: read
+
+concurrency:
+  group: plan-${{ github.event.pull_request.number }}
+  cancel-in-progress: true
+
+jobs:
+  plan:
+    name: plan the change
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      pull-requests: write
+    steps:
+      - name: Check out main (trusted code)
+        uses: actions/checkout@v7
+        with:
+          ref: ${{ github.event.pull_request.base.ref }}
+
+      - name: Check out the pull request (data only)
+        uses: actions/checkout@v7
+        with:
+          repository: ${{ github.event.pull_request.head.repo.full_name }}
+          ref: ${{ github.event.pull_request.head.sha }}
+          path: .pull-request
+          persist-credentials: false
+
+      - name: Take the zone files from the pull request
+        run: |
+          set -eu
+          # Replace only the zone files. Everything else, including bin/ and
+          # config/, stays on main's trusted version.
+          rm -f ./*.yaml
+          cp .pull-request/*.yaml ./ 2>/dev/null || true
+          rm -rf .pull-request
+          ls -1 ./*.yaml || echo "The pull request leaves no zone files."
+
+      - uses: actions/setup-python@v7
+        with:
+          python-version: '3.12'
+          cache: pip
+
+      - name: Install octoDNS
+        run: pip install -r requirements.txt
+
+      - name: Plan the change
+        env:
+          CLOUDFLARE_TOKEN: ${{ secrets.CLOUDFLARE_TOKEN_READ_ONLY }}
+        run: ./bin/plan > plan.md
+
+      - name: Post the plan on the pull request
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          PR: ${{ github.event.pull_request.number }}
+          REPO: ${{ github.repository }}
+          BASE_REF: ${{ github.event.pull_request.base.ref }}
+        run: |
+          set -eu
+          marker='<!-- octodns-plan -->'
+
+          {
+            printf '%s\n' "$marker"
+            printf '## octoDNS plan\n\n'
+            if grep -q 'No changes were planned' plan.md; then
+              printf 'This pull request changes no DNS records.\n'
+            elif [ "$(wc -c < plan.md)" -gt 50000 ]; then
+              head -c 50000 plan.md
+              printf '\n\n_Plan truncated. Open the workflow log for all of it._\n'
+            else
+              cat plan.md
+            fi
+            printf '\n\n---\n'
+            printf 'Planned against `%s` with a read-only Cloudflare token. ' "$BASE_REF"
+            printf 'Only the zone files at the repository root are included. '
+            printf 'Changes to `config/`, `bin/` or `.github/` are **not** in '
+            printf 'this plan, so review those by hand.\n'
+          } > comment.md
+
+          id=$(gh api "repos/$REPO/issues/$PR/comments" --paginate \
+            --jq "map(select(.body | startswith(\"$marker\"))) | .[0].id // empty")
+          if [ -n "$id" ]; then
+            gh api -X PATCH "repos/$REPO/issues/comments/$id" -F body=@comment.md
+          else
+            gh api -X POST "repos/$REPO/issues/$PR/comments" -F body=@comment.md
+          fi
+
+  drift:
+    name: cloudflare in sync
+    runs-on: ubuntu-latest
+    # The nightly sync pull request exists to fix drift, so it must not be
+    # blocked by drift. The repository check matters: without it, anybody could
+    # skip this gate by naming their fork's branch `cloudflare-sync`.
+    if: >-
+      !(github.event.pull_request.head.repo.full_name == github.repository &&
+        github.event.pull_request.head.ref == 'cloudflare-sync')
+    steps:
+      - name: Check out main
+        uses: actions/checkout@v7
+        with:
+          ref: ${{ github.event.pull_request.base.ref }}
+
+      - uses: actions/setup-python@v7
+        with:
+          python-version: '3.12'
+          cache: pip
+
+      - name: Install octoDNS
+        run: pip install -r requirements.txt
+
+      - name: Compare Cloudflare against main
+        env:
+          CLOUDFLARE_TOKEN: ${{ secrets.CLOUDFLARE_TOKEN_READ_ONLY }}
+          BASE_REF: ${{ github.event.pull_request.base.ref }}
+        run: |
+          set -eu
+          ./bin/plan > drift.md
+          if grep -q 'No changes were planned' drift.md; then
+            echo "Cloudflare matches $BASE_REF."
+            exit 0
+          fi
+
+          echo "::error title=Cloudflare has drifted::Cloudflare does not match $BASE_REF. Merging now would undo changes that somebody made in the Cloudflare dashboard."
+          echo
+          echo "Difference between Cloudflare and $BASE_REF:"
+          cat drift.md
+          echo
+          echo "Fix it by merging the open 'cloudflare-sync' pull request, or by"
+          echo "running the 'sync-from-cloudflare' workflow to create one."
+          exit 1

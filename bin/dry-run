@@ -1,8 +1,5 @@
 #!/bin/sh
+# Alias for ./bin/plan, kept because older docs and habits refer to it.
+set -eu
 
-FORCE_FLAG=""
-if [ "$1" = "--force" ]; then
-    FORCE_FLAG="--force"
-fi
-
-octodns-sync --config-file=./config/main.yaml $FORCE_FLAG
+exec "$(dirname "$0")/plan" "$@"

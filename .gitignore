@@ -1,3 +1,16 @@
+# Secrets. Never commit a Cloudflare token.
 .env
-venv
-tmp
+.env.*
+
+# Local Python virtualenv used for `bin/*` scripts.
+env/
+venv/
+.venv/
+__pycache__/
+*.pyc
+
+# Generated plan and dump output.
+plan.md
+plan.json
+.live/
+.worktrees/

@@ -1,23 +1,63 @@
-name: Validate DNS Configs
+name: validate
+
+# Runs on every pull request, including pull requests from forks. It holds no
+# secrets and never contacts Cloudflare, so it is safe to run on code that
+# somebody else wrote.
+
 on:
   push:
-    branches:
-      - main
+    branches: [main]
   pull_request:
   workflow_dispatch:
 
 permissions:
   contents: read
-  pull-requests: write
 
 jobs:
-  json-yaml-validate:
+  yaml:
+    name: yaml syntax
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7
 
-      - name: Validate JSON & YAML
-        id: json-yaml-validate
-        uses: GrantBirki/json-yaml-validate@v2.7.1
+      - name: Check YAML and JSON syntax
+        uses: GrantBirki/json-yaml-validate@v5
         with:
-          comment: "true"
+          # Not "true". A pull request from a fork gets a read-only token, so
+          # the action could not comment, and the job would fail for every
+          # outside contributor. The failure is visible in the check itself.
+          comment: "false"
+
+  records:
+    name: dns records
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7
+
+      - uses: actions/setup-python@v7
+        with:
+          python-version: '3.12'
+          cache: pip
+
+      - name: Install octoDNS
+        run: pip install -r requirements.txt
+
+      - name: Validate every record
+        run: ./bin/validate
+
+  tools:
+    name: tools tests
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7
+
+      - uses: actions/setup-python@v7
+        with:
+          python-version: '3.12'
+          cache: pip
+
+      - name: Install dependencies
+        run: pip install -r requirements.txt
+
+      - name: Run the tests
+        run: python -m unittest discover -s tools -p 'test_*.py' -v

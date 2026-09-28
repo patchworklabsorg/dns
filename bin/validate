@@ -1,0 +1,9 @@
+#!/bin/sh
+# Check that the config and the zone files parse and that every record is
+# valid. Does not contact Cloudflare, so it needs no real token.
+set -eu
+
+CLOUDFLARE_TOKEN="${CLOUDFLARE_TOKEN:-validate-only-not-a-real-token}"
+export CLOUDFLARE_TOKEN
+
+exec octodns-validate --config-file=./config/config.yaml "$@"
