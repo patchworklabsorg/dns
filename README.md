@@ -38,9 +38,11 @@ Three rules decide whether it works:
 
 - **The name is the part before the domain.** `docs` becomes `docs.patchworklabs.org`.
 - **A `CNAME` value ends with a dot.** An `A` or `AAAA` value does not.
-- **Every record needs an owner.** Put a Patchwork email in a comment on the same
-  line as the name. We use it to find out who to ask when the record breaks.
-  List more than one person if more than one person is responsible.
+- **Every record needs an owner.** Put an email or a GitHub handle in a
+  comment on the same line as the name, for example `# ada@patchworklabs.org`
+  or `# @patchworklabsorg/infra`. We use it to find out who to ask when the
+  record breaks. List more than one owner if more than one person is
+  responsible. The `dns records` check fails on a record without an owner.
 
 ### Order is checked
 
@@ -53,6 +55,21 @@ a rule and not a request. The order is **natural**, not plain alphabetical:
 
 Run `./bin/validate` to check before you push. The nightly sync writes files
 in this order by itself.
+
+### Other checks
+
+`./bin/validate` also runs [`tools/check_zones.py`](./tools/check_zones.py).
+It fails when:
+
+- A record has no owner comment, or only a `TODO owner unknown` comment.
+- A TTL is lower than 120 seconds. Cloudflare raises a lower TTL to 120, so
+  the zone file would never match Cloudflare.
+- A zone file holds the apex `NS` records. Cloudflare owns them.
+- A zone file holds the `octodns-meta` record. octoDNS writes it.
+- A record that is not `A`, `AAAA` or `CNAME` is behind the Cloudflare proxy.
+- A zone in `config/config.yaml` has no zone file, or a YAML file at the
+  repository root is not a zone.
+- One name appears twice in one file.
 
 ### 2. Open a pull request
 

@@ -28,9 +28,33 @@ There is also one repository **variable**, not a secret:
 |---|---|
 | `DNS_BOT_CLIENT_ID` | Client ID of the same App. An identifier, not a credential |
 
-The two Cloudflare tokens already exist. Create them at
-**Cloudflare > My Profile > API Tokens** with the `Edit zone DNS` template, and
-scope each one to `patchworklabs.org` and `hackathon.help` only.
+The two zones are in **different Cloudflare accounts**:
+
+| Zone | Cloudflare account |
+|---|---|
+| `patchworklabs.org` | Patchwork Labs |
+| `hackathon.help` | Jasper Mayone |
+
+An account API token can only see the zones in its own account. Use a **user**
+token, which can cover zones in every account its owner belongs to. Create
+each one at **Cloudflare > My Profile > API Tokens**:
+
+1. Select **Create Custom Token**.
+2. **Permissions**: `Zone` `Zone` `Read`, and `Zone` `DNS` `Edit` for
+   `CLOUDFLARE_TOKEN` or `Zone` `DNS` `Read` for
+   `CLOUDFLARE_TOKEN_READ_ONLY`.
+3. **Zone Resources**: `Include` `Specific zone` `patchworklabs.org`, then add
+   a second row for `hackathon.help`.
+4. Save the value straight into the repository secret. Do not paste it
+   anywhere else:
+
+   ```console
+   $ gh secret set CLOUDFLARE_TOKEN --repo patchworklabsorg/dns
+   ```
+
+A token that cannot see a zone makes octoDNS try to create that zone. The
+deploy then fails with `Invalid account identifier passed in your organization
+variable`.
 
 > **Rotate `CLOUDFLARE_TOKEN_READ_ONLY` once.** The old `test.yml` workflow
 > ran scripts from a pull request while holding it, so anybody who opened a

@@ -13,9 +13,9 @@ The repository uses OctoDNS with Cloudflare as the DNS provider and YAML configu
 ## Architecture
 
 - **Configuration**: `config/config.yaml` defines providers, processors and zone mappings. `enforce_order` with `order_mode: natural` is on.
-- **DNS Records**: Domain-specific YAML files (`patchworklabs.org.yaml`, `hackathon.help.yaml`) contain DNS record definitions. Every new record needs an owner email in a comment on the same line as its name.
+- **DNS Records**: Domain-specific YAML files (`patchworklabs.org.yaml`, `hackathon.help.yaml`) contain DNS record definitions. Every record needs an owner (an email or a GitHub handle) in a comment on the same line as its name.
 - **Scripts**: Shell scripts in `bin/` handle DNS operations. They read the zone list from `config/config.yaml` through `bin/zones`.
-- **Tools**: `tools/merge_live.py` merges live Cloudflare state back into the zone files and keeps comments. Tests are in `tools/test_merge_live.py`.
+- **Tools**: `tools/merge_live.py` merges live Cloudflare state back into the zone files and keeps comments. `tools/check_zones.py` checks the repository rules (owner comment on every record, TTL of 120 or more, no apex NS, no `octodns-meta`, proxy only on A/AAAA/CNAME). `./bin/validate` runs it. Tests are in `tools/test_*.py`.
 - **Workflows**: `validate` (no secrets), `plan` (`pull_request_target`, posts the plan and checks drift), `deploy` (push to `main`), `sync-from-cloudflare` (nightly).
 - **Dependencies**: Python dependencies pinned in `requirements.txt`.
 
@@ -78,11 +78,12 @@ Use appropriate TTL values based on record type and change frequency:
 ### Record Comments Format
 ```yaml
 # Google Workspace email routing - DO NOT MODIFY without IT approval
-mx:
-  values:
-    - exchange: mx1.example.com
-      priority: 10
+"": # @patchworklabsorg/infra
   ttl: 3600
+  type: MX
+  values:
+    - exchange: mx1.example.com.
+      preference: 10
 ```
 
 ## Important Notes
