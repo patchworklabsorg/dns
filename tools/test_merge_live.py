@@ -265,6 +265,156 @@ blog:
         self.assertIn("192.0.2.7", result)
         self.assertNotIn("ns1.cloudflare.com.", result)
 
+    def write_config(self, default_ttl):
+        (self.repo_dir / "config").mkdir()
+        (self.repo_dir / "config" / "config.yaml").write_text(
+            "providers:\n"
+            f"  config:\n    default_ttl: {default_ttl}\n"
+            "  cloudflare:\n    min_ttl: 120\n"
+        )
+
+    def test_auto_ttl_on_a_proxied_record_is_not_drift(self):
+        # Cloudflare reports a proxied record with TTL 1, which the dump writes
+        # as auto-ttl and 300. Cloudflare ignores the TTL on a proxied record,
+        # so the deploy does not change it, and neither should this script.
+        repo = """---
+www: # ada@patchworklabs.org
+  octodns:
+      cloudflare:
+        proxied: true
+  ttl: 120
+  type: A
+  value: 192.0.2.1
+"""
+        (self.repo_dir / "patchworklabs.org.yaml").write_text(repo)
+        self.write_live(
+            """---
+www:
+  octodns:
+    cloudflare:
+      auto-ttl: true
+      proxied: true
+  ttl: 300
+  type: A
+  value: 192.0.2.1
+"""
+        )
+        self.assertEqual(([], [], []), self.merge())
+        self.assertEqual(repo, self.result())
+
+    def test_txt_values_in_another_order_are_not_drift(self):
+        repo = """---
+"": # ada@patchworklabs.org
+  ttl: 600
+  type: TXT
+  values:
+    - b=2
+    - a=1
+"""
+        (self.repo_dir / "patchworklabs.org.yaml").write_text(repo)
+        self.write_live(
+            """---
+'':
+  ttl: 600
+  type: TXT
+  values:
+    - a=1
+    - b=2
+"""
+        )
+        self.assertEqual(([], [], []), self.merge())
+        self.assertEqual(repo, self.result())
+
+    def test_default_ttls_are_not_drift(self):
+        # The zone files default to 600 and the dump defaults to 3600, so the
+        # same TTL can be left out on one side and written on the other.
+        self.write_config(600)
+        repo = """---
+long: # ada@patchworklabs.org
+  ttl: 3600
+  type: TXT
+  value: x
+short: # ada@patchworklabs.org
+  type: TXT
+  value: y
+"""
+        (self.repo_dir / "patchworklabs.org.yaml").write_text(repo)
+        self.write_live(
+            """---
+long:
+  type: TXT
+  value: x
+short:
+  ttl: 600
+  type: TXT
+  value: y
+"""
+        )
+        self.assertEqual(([], [], []), self.merge())
+        self.assertEqual(repo, self.result())
+
+    def test_a_copied_record_keeps_the_dump_default_ttl(self):
+        self.write_config(600)
+        self.write_live(
+            REPO_FILE
+            + """
+blog:
+  type: CNAME
+  value: blog.example.com.
+"""
+        )
+        self.merge()
+        self.assertIn(
+            "blog: # TODO owner unknown, added from Cloudflare on 2026-09-21\n"
+            "  ttl: 3600\n",
+            self.result(),
+        )
+
+    def test_unchanged_records_keep_their_exact_text(self):
+        repo = """"": # ada@patchworklabs.org
+  - ttl: 600
+    type: A
+    value: 192.0.2.1
+
+# Owned by the API team.
+api: # @patchworklabsorg/api
+  octodns:
+      cloudflare:
+        proxied: true
+  ttl: 600
+  type: A
+  value: 192.0.2.2
+
+# Grace runs this one.
+zeta: # grace@patchworklabs.org
+  ttl: 600
+  type: A
+  value: 192.0.2.3
+"""
+        (self.repo_dir / "patchworklabs.org.yaml").write_text(repo)
+        self.write_live(
+            """---
+'':
+  - ttl: 600
+    type: A
+    value: 192.0.2.1
+api:
+  octodns:
+    cloudflare:
+      proxied: true
+  ttl: 600
+  type: A
+  value: 192.0.2.2
+zeta:
+  ttl: 600
+  type: A
+  value: 192.0.2.99
+"""
+        )
+        self.assertEqual(([], ["zeta"], []), self.merge())
+        expected = repo.replace("192.0.2.3", "192.0.2.99")
+        self.assertEqual(expected, self.result())
+
     def test_missing_dump_is_an_error(self):
         with self.assertRaises(FileNotFoundError):
             self.merge()
