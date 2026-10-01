@@ -47,14 +47,6 @@ _gh-patchworklabsorg-o: # @patchworklabsorg/infra
   type: TXT
   value: cee2c56f89
 
-admin.forms: # @patchworklabsorg/infra
-  octodns:
-      cloudflare:
-        proxied: true
-  ttl: 120
-  type: A
-  value: 65.19.76.238
-
 cio160924.cio: # PWL7A1CE1F3CB / jasper@patchworklabs.org
   - ttl: 300
     type: MX
@@ -72,34 +64,36 @@ cio._domainkey.cio160924.cio: # PWL7A1CE1F3CB / jasper@patchworklabs.org
   type: TXT
   value: k=rsa\; p=MIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKCAQEA0eVU0HCCkUK5FPCvMoX03lgTqTNWEkYA61pKilwmMif+B/L+AlLqQVywt22RLAWCpiJv3hRUFi4UmdXbAZzWjhVY5Mem8F1XqWvu6Xv1yAIC08tX+3vMH+5gdp/SJ8I1z2tmJXNMYbeAC3jK6uxOoY+Mcs63VLtstVJqqmFfJv454D4A8m5ckqb/ltkf6+dlxpC5mHx0IAf7ybek4fCKSlSIwCRI3M1rX2Jhh3KpvQkce4x53Hinj14t5w5u+eCdNUljUuyjjZBq1BMQn65p0FeJ4A6y8jxQXJM44Wajtd+zuDFK1AL8rrbFTgtkezurZvZCSZQSa1UfUkIegAbx2wIDAQAB
 
-forms: # @patchworklabsorg/infra
-  octodns:
-      cloudflare:
-        proxied: true
-  ttl: 120
-  type: A
-  value: 65.19.76.238
-
 # Google Workspace DKIM authentication
 google._domainkey: # @patchworklabsorg/infra
   type: TXT
   value: v=DKIM1\; k=rsa\; p=MIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKCAQEAzEuGHXgOxIj0qk83hV4ajl/OIpXbhE/MTKhXU1VZDBISO/+yBCQsVyq1j4F13tWxUpYLlw78OJl+7TlAyZ4llYY5z2Oj+EiAIQZCRBLmKN7zDpnbwbiM4hfam5vnhCvFwdgg0aKUY221T/Pe5Mjz11e0VtyOJ3D3enPId010bi99p93Dimf+rFo9YFwps7U/V4O5rWaRyG9snFcl9tshvKTgQ6OoHEvLbvQIU1QTiXR6oHAI5KP/8BzA26djgIKqNuHaU9S70KSVUH/9CBSAjHP50j4i4rGGEr6PopNjxQxN5owwu2jUDEIOrv13RLpNPISu1NaPCgMnGVyfsQ77yQIDAQAB
-
-idp: # @patchworklabsorg/infra
-  ttl: 120
-  type: A
-  value: 129.213.163.213
 
 openpgpkey: # @patchworklabsorg/infra
   ttl: 300
   type: CNAME
   value: wkd.keys.openpgp.org.
 
+resend._domainkey.sandbox: # PWL7A1CE1F3CB / jasper@patchworklabs.org
+  ttl: 3600
+  type: TXT
+  value: p=MIGfMA0GCSqGSIb3DQEBAQUAA4GNADCBiQKBgQDxua1n4Hmk59q+hfD5XNVGh2izW+4sQZO6geNKIfiiAFkJV1yE2WJFZA+AJLIYGNbZ5YZTi89iWhodFCtOjynMHL0a0AvE/rA09NDp22b3J2pSxp2Xd0h5tRsmyL2yx8lCor4G9QCu6EkZz4jY3VXQOSQICnDnzMaBeV4hyebeYwIDAQAB
+
 # Weave (Patchwork Labs IDP) sends email through Resend from send.weave.
 resend._domainkey.weave: # @patchworklabsorg/weave
   ttl: 3600
   type: TXT
   value: p=MIGfMA0GCSqGSIb3DQEBAQUAA4GNADCBiQKBgQCw686PBvLW3WwbVohPhkkxGXnkfIj4Qe+1h0t64WPqZcu70jF0SrbdfGU7yKgpnAA7/JvtkngYPfc85EGGHxrD83MG5DQ60vK9EPn5PExt4iYWwfMRSJ0solhKeu/8//YLvn7Lq7O+1HaFp566qH4RZ8xa5hENZy5rqEkmIpoHFQIDAQAB
+
+rsend.sandbox: # PWL7A1CE1F3CB / jasper@patchworklabs.org
+  ttl: 3600
+  type: CNAME
+  value: rsend.forge.rmta.net.
+
+send.sandbox: # PWL7A1CE1F3CB / jasper@patchworklabs.org
+  ttl: 3600
+  type: CNAME
+  value: send.forge.rmta.net.
 
 send.weave: # @patchworklabsorg/weave
   - ttl: 3600
