@@ -85,12 +85,12 @@ resend._domainkey.weave: # @patchworklabsorg/weave
   type: TXT
   value: p=MIGfMA0GCSqGSIb3DQEBAQUAA4GNADCBiQKBgQCw686PBvLW3WwbVohPhkkxGXnkfIj4Qe+1h0t64WPqZcu70jF0SrbdfGU7yKgpnAA7/JvtkngYPfc85EGGHxrD83MG5DQ60vK9EPn5PExt4iYWwfMRSJ0solhKeu/8//YLvn7Lq7O+1HaFp566qH4RZ8xa5hENZy5rqEkmIpoHFQIDAQAB
 
-rsend.sandbox: # TODO owner unknown, added from Cloudflare on 2026-10-01
+rsend.sandbox: # PWL7A1CE1F3CB / jasper@patchworklabs.org
   ttl: 3600
   type: CNAME
   value: rsend.forge.rmta.net.
 
-send.sandbox: # TODO owner unknown, added from Cloudflare on 2026-10-01
+send.sandbox: # PWL7A1CE1F3CB / jasper@patchworklabs.org
   ttl: 3600
   type: CNAME
   value: send.forge.rmta.net.
