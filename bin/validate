@@ -1,9 +1,13 @@
 #!/bin/sh
 # Check that the config and the zone files parse and that every record is
-# valid. Does not contact Cloudflare, so it needs no real token.
+# valid. Then check the repository rules that octoDNS does not know about,
+# such as the owner comment on every record. See tools/check_zones.py.
+#
+# Does not contact Cloudflare, so it needs no real token.
 set -eu
 
 CLOUDFLARE_TOKEN="${CLOUDFLARE_TOKEN:-validate-only-not-a-real-token}"
 export CLOUDFLARE_TOKEN
 
-exec octodns-validate --config-file=./config/config.yaml "$@"
+octodns-validate --config-file=./config/config.yaml "$@"
+python3 tools/check_zones.py

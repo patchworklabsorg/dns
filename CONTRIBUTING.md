@@ -11,7 +11,9 @@ Thank you for helping run the Patchwork Labs DNS. This file covers the rules. Th
 3. Keep records in order inside a zone file. The `dns records` check enforces
    it. The order is natural, so `ns2` comes before `ns10`, and inside a record
    `octodns` comes before `ttl`, `type` and `value`. Run `./bin/validate`.
-4. Give every record an owner in a comment on the same line as its name.
+4. Give every record an owner in a comment on the same line as its name. Use
+   an email, a Patchwork id (`PWL...`), or both. The `dns records` check
+   enforces it.
 5. Read the `octoDNS plan` comment on your pull request before you ask for a
    review. It is the exact list of changes the merge will make.
 6. Answer review comments on the same pull request. Do not close it and open a
@@ -82,7 +84,7 @@ pull request the next morning.
 $ python -m unittest discover -s tools -p 'test_*.py' -v
 ```
 
-Add a test with any change to `tools/merge_live.py`. That script edits the zone
+Add a test with any change to `tools/merge_live.py` or `tools/check_zones.py`. That script edits the zone
 files by itself every night, so a bug in it is a bug in production DNS.
 
 Never loosen the security note at the top of

@@ -14,7 +14,7 @@ which keeps comments attached to their record.
 Usage:
 
     python3 tools/merge_live.py --live-dir .live --repo-dir . \
-        --zone patchworklabs.org. --zone hackathon.help. --summary-out summary.md
+        --zone patchworklabs.org. --summary-out summary.md
 
 The script writes a Markdown summary to ``--summary-out`` and prints one line
 per zone to stdout. It exits 0 when nothing changed and 0 when something did.

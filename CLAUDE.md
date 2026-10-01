@@ -4,18 +4,16 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ## Project Overview
 
-This is a DNS management repository using OctoDNS to manage DNS records for two domains:
-- `patchworklabs.org`
-- `hackathon.help`
+This is a DNS management repository using OctoDNS to manage DNS records for `patchworklabs.org`.
 
 The repository uses OctoDNS with Cloudflare as the DNS provider and YAML configuration files to define DNS records declaratively. The setup mirrors `WITCodingClub/dns`. `README.md`, `CONTRIBUTING.md` and `docs/runbook.md` are the full reference.
 
 ## Architecture
 
 - **Configuration**: `config/config.yaml` defines providers, processors and zone mappings. `enforce_order` with `order_mode: natural` is on.
-- **DNS Records**: Domain-specific YAML files (`patchworklabs.org.yaml`, `hackathon.help.yaml`) contain DNS record definitions. Every new record needs an owner email in a comment on the same line as its name.
+- **DNS Records**: The zone file `patchworklabs.org.yaml` contains DNS record definitions. Every record needs an owner (an email, a Patchwork id such as `PWL7A1CE1F3CB`, or both; a GitHub team for team-owned records) in a comment on the same line as its name.
 - **Scripts**: Shell scripts in `bin/` handle DNS operations. They read the zone list from `config/config.yaml` through `bin/zones`.
-- **Tools**: `tools/merge_live.py` merges live Cloudflare state back into the zone files and keeps comments. Tests are in `tools/test_merge_live.py`.
+- **Tools**: `tools/merge_live.py` merges live Cloudflare state back into the zone files and keeps comments. `tools/check_zones.py` checks the repository rules (owner comment on every record, TTL of 120 or more, no apex NS, no `octodns-meta`, proxy only on A/AAAA/CNAME). `./bin/validate` runs it. Tests are in `tools/test_*.py`.
 - **Workflows**: `validate` (no secrets), `plan` (`pull_request_target`, posts the plan and checks drift), `deploy` (push to `main`), `sync-from-cloudflare` (nightly).
 - **Dependencies**: Python dependencies pinned in `requirements.txt`.
 
@@ -39,7 +37,7 @@ export CLOUDFLARE_TOKEN=YOUR_READ_ONLY_TOKEN_HERE
 ## Configuration Structure
 
 - **Provider Config**: Cloudflare provider configured in `config/config.yaml` with API token from the `CLOUDFLARE_TOKEN` environment variable
-- **Zone Sources**: Both domains use the YAML provider as source and Cloudflare as target
+- **Zone Sources**: The zone uses the YAML provider as source and Cloudflare as target
 - **Meta record**: The `meta` processor writes an `octodns-meta` TXT record on each deploy. Do not add it to a zone file.
 - **DNS Records**: Defined in domain-specific YAML files with standard DNS record types (MX, TXT, CNAME, etc.)
 
@@ -78,11 +76,12 @@ Use appropriate TTL values based on record type and change frequency:
 ### Record Comments Format
 ```yaml
 # Google Workspace email routing - DO NOT MODIFY without IT approval
-mx:
-  values:
-    - exchange: mx1.example.com
-      priority: 10
+"": # @patchworklabsorg/infra
   ttl: 3600
+  type: MX
+  values:
+    - exchange: mx1.example.com.
+      preference: 10
 ```
 
 ## Important Notes
@@ -91,4 +90,4 @@ mx:
 - Never change DNS in the Cloudflare dashboard. Use a pull request. The nightly sync opens a `cloudflare-sync` pull request for any dashboard change.
 - The `--force` flag bypasses safety checks and should be used carefully
 - DNS records include critical configurations like DMARC, Google Site Verification, and email routing
-- Both domains are owned by Patchwork Labs Inc with similar DNS configurations
+- The domain is owned by Patchwork Labs Inc

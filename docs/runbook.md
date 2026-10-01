@@ -18,8 +18,8 @@ lands.
 
 | Secret | What it is | Used by |
 |---|---|---|
-| `CLOUDFLARE_TOKEN` | Cloudflare API token, **edit** DNS for both zones | `deploy` |
-| `CLOUDFLARE_TOKEN_READ_ONLY` | Cloudflare API token, **read** DNS for both zones | `plan`, `sync-from-cloudflare` |
+| `CLOUDFLARE_TOKEN` | Cloudflare API token, **edit** DNS for `patchworklabs.org` | `deploy` |
+| `CLOUDFLARE_TOKEN_READ_ONLY` | Cloudflare API token, **read** DNS for `patchworklabs.org` | `plan`, `sync-from-cloudflare` |
 | `DNS_BOT_PRIVATE_KEY` | Private key of the Patchwork DNS Bot GitHub App, the whole `.pem` | `sync-from-cloudflare` |
 
 There is also one repository **variable**, not a secret:
@@ -28,9 +28,25 @@ There is also one repository **variable**, not a secret:
 |---|---|
 | `DNS_BOT_CLIENT_ID` | Client ID of the same App. An identifier, not a credential |
 
-The two Cloudflare tokens already exist. Create them at
-**Cloudflare > My Profile > API Tokens** with the `Edit zone DNS` template, and
-scope each one to `patchworklabs.org` and `hackathon.help` only.
+The zone is in the **Patchwork Labs** Cloudflare account. An account API
+token can only see the zones in its own account, so create each token in that
+account at **Cloudflare > Manage Account > Account API Tokens**:
+
+1. Select **Create Custom Token**.
+2. **Permissions**: `Zone` `Zone` `Read`, and `Zone` `DNS` `Edit` for
+   `CLOUDFLARE_TOKEN` or `Zone` `DNS` `Read` for
+   `CLOUDFLARE_TOKEN_READ_ONLY`.
+3. **Zone Resources**: `Include` `Specific zone` `patchworklabs.org`.
+4. Save the value straight into the repository secret. Do not paste it
+   anywhere else:
+
+   ```console
+   $ gh secret set CLOUDFLARE_TOKEN --repo patchworklabsorg/dns
+   ```
+
+A token that cannot see a zone makes octoDNS try to create that zone. The
+deploy then fails with `Invalid account identifier passed in your organization
+variable`.
 
 > **Rotate `CLOUDFLARE_TOKEN_READ_ONLY` once.** The old `test.yml` workflow
 > ran scripts from a pull request while holding it, so anybody who opened a
@@ -202,8 +218,8 @@ The zone files and Cloudflare now disagree. Fix it, do not leave it.
   This guard exists because octoDNS's own guard has a hole. octoDNS refuses a
   plan that updates or deletes more than 30% of a zone, but only for a zone
   that already has at least 10 records. `MIN_EXISTING_RECORDS` is a constant in
-  octoDNS and cannot be configured. `hackathon.help` has fewer records than that,
-  so octoDNS would delete every one of them without complaining.
+  octoDNS and cannot be configured. A zone with fewer records than that has no
+  guard from octoDNS at all.
 
 - **`TooMuchChange`.** This is octoDNS's own guard, for a zone with 10 records
   or more. Read the plan. If the change really is correct, apply it by hand:
@@ -262,7 +278,7 @@ $ cat .live/patchworklabs.org.yaml
 
 ## If everything is broken
 
-DNS for both zones is in Cloudflare. Cloudflare is the live system. This
+DNS for the zone is in Cloudflare. Cloudflare is the live system. This
 repository is how we change it, not how it serves.
 
 1. Fix the record in the Cloudflare dashboard. The site comes back.

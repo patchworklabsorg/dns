@@ -12,7 +12,7 @@ days.
 
 ## What matters here
 
-This repository controls DNS for `patchworklabs.org` and `hackathon.help`.
+This repository controls DNS for `patchworklabs.org`.
 Somebody who can change a record can point a Patchwork name at a host they
 control. Treat these
 as serious:
