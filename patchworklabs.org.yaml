@@ -1,4 +1,12 @@
-"": # @patchworklabsorg/infra
+---
+'': # @patchworklabsorg/infra
+  - octodns:
+      cloudflare:
+        auto-ttl: true
+        proxied: true
+    ttl: 300
+    type: A
+    value: 216.198.79.1
   - ttl: 120
     type: MX
     values:
@@ -15,17 +23,11 @@
   - ttl: 120
     type: TXT
     values:
-      - google-site-verification=OjTBuEBXcUdIOVzjidh1sCMfvAYvabpQWnkGfFFQQA4
       - Owned by Patchwork Labs Inc (patchworklabs.org) a registered 501(c)(3) nonprofit organization.
-      - v=spf1 include:_spf.google.com ~all
+      - google-site-verification=OjTBuEBXcUdIOVzjidh1sCMfvAYvabpQWnkGfFFQQA4
       - slack-domain-verification=ST5I2hJgX8CutN19stoedtub8ODxC2KwlHcbpKtb
       - stripe-verification=2EACE39B000887BB0491EB25506F91621A1E1097C9DE7C5C7C9E4E9F8701137E
-  - octodns:
-      cloudflare:
-        proxied: true
-    ttl: 120
-    type: A
-    value: 216.198.79.1
+      - v=spf1 include:_spf.google.com ~all
 
 _atproto: # @patchworklabsorg/infra
   ttl: 120
@@ -37,21 +39,21 @@ _dmarc: # @patchworklabsorg/infra
   type: TXT
   value: v=DMARC1\; p=quarantine\; np=reject\; rua=mailto:dmarc_reports@patchworklabs.org\; ruf=mailto:dmarc_reports@patchworklabs.org\; adkim=s\; aspf=s
 
-# Customer.io sending domain (Mailgun)
 _dmarc.cio: # PWL7A1CE1F3CB / jasper@patchworklabs.org
-  ttl: 3600
   type: TXT
   value: v=DMARC1\; p=quarantine\; np=reject\; rua=mailto:dmarc_reports@patchworklabs.org\; ruf=mailto:dmarc_reports@patchworklabs.org\; adkim=s\; aspf=s
 
 _gh-patchworklabsorg-o: # @patchworklabsorg/infra
+  ttl: 600
   type: TXT
   value: cee2c56f89
 
 admin.forms: # @patchworklabsorg/infra
   octodns:
-      cloudflare:
-        proxied: true
-  ttl: 120
+    cloudflare:
+      auto-ttl: true
+      proxied: true
+  ttl: 300
   type: A
   value: 65.19.76.238
 
@@ -63,25 +65,24 @@ cio160924.cio: # PWL7A1CE1F3CB / jasper@patchworklabs.org
         preference: 10
       - exchange: mxb.mailgun.org.
         preference: 10
-  - ttl: 3600
-    type: TXT
+  - type: TXT
     value: v=spf1 include:mailgun.org ~all
 
 cio._domainkey.cio160924.cio: # PWL7A1CE1F3CB / jasper@patchworklabs.org
-  ttl: 3600
   type: TXT
   value: k=rsa\; p=MIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKCAQEA0eVU0HCCkUK5FPCvMoX03lgTqTNWEkYA61pKilwmMif+B/L+AlLqQVywt22RLAWCpiJv3hRUFi4UmdXbAZzWjhVY5Mem8F1XqWvu6Xv1yAIC08tX+3vMH+5gdp/SJ8I1z2tmJXNMYbeAC3jK6uxOoY+Mcs63VLtstVJqqmFfJv454D4A8m5ckqb/ltkf6+dlxpC5mHx0IAf7ybek4fCKSlSIwCRI3M1rX2Jhh3KpvQkce4x53Hinj14t5w5u+eCdNUljUuyjjZBq1BMQn65p0FeJ4A6y8jxQXJM44Wajtd+zuDFK1AL8rrbFTgtkezurZvZCSZQSa1UfUkIegAbx2wIDAQAB
 
 forms: # @patchworklabsorg/infra
   octodns:
-      cloudflare:
-        proxied: true
-  ttl: 120
+    cloudflare:
+      auto-ttl: true
+      proxied: true
+  ttl: 300
   type: A
   value: 65.19.76.238
 
-# Google Workspace DKIM authentication
 google._domainkey: # @patchworklabsorg/infra
+  ttl: 600
   type: TXT
   value: v=DKIM1\; k=rsa\; p=MIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKCAQEAzEuGHXgOxIj0qk83hV4ajl/OIpXbhE/MTKhXU1VZDBISO/+yBCQsVyq1j4F13tWxUpYLlw78OJl+7TlAyZ4llYY5z2Oj+EiAIQZCRBLmKN7zDpnbwbiM4hfam5vnhCvFwdgg0aKUY221T/Pe5Mjz11e0VtyOJ3D3enPId010bi99p93Dimf+rFo9YFwps7U/V4O5rWaRyG9snFcl9tshvKTgQ6OoHEvLbvQIU1QTiXR6oHAI5KP/8BzA26djgIKqNuHaU9S70KSVUH/9CBSAjHP50j4i4rGGEr6PopNjxQxN5owwu2jUDEIOrv13RLpNPISu1NaPCgMnGVyfsQ77yQIDAQAB
 
@@ -95,38 +96,33 @@ openpgpkey: # @patchworklabsorg/infra
   type: CNAME
   value: wkd.keys.openpgp.org.
 
-# Weave (Patchwork Labs IDP) sends email through Resend from send.weave.
 resend._domainkey.weave: # @patchworklabsorg/infra
-  ttl: 3600
   type: TXT
   value: p=MIGfMA0GCSqGSIb3DQEBAQUAA4GNADCBiQKBgQCw686PBvLW3WwbVohPhkkxGXnkfIj4Qe+1h0t64WPqZcu70jF0SrbdfGU7yKgpnAA7/JvtkngYPfc85EGGHxrD83MG5DQ60vK9EPn5PExt4iYWwfMRSJ0solhKeu/8//YLvn7Lq7O+1HaFp566qH4RZ8xa5hENZy5rqEkmIpoHFQIDAQAB
 
 send.weave: # @patchworklabsorg/infra
-  - ttl: 3600
-    type: MX
+  - type: MX
     value:
       exchange: feedback-smtp.us-east-1.amazonses.com.
       preference: 10
-  - ttl: 3600
-    type: TXT
+  - type: TXT
     value: v=spf1 include:amazonses.com ~all
 
-# Public "join our Slack" address. Weave redirects it to
-# https://weave.patchworklabs.org/slack (patchworklabsorg/weave#121).
 slack: # @patchworklabsorg/infra
   octodns:
-      cloudflare:
-        proxied: true
-  ttl: 120
+    cloudflare:
+      auto-ttl: true
+      proxied: true
+  ttl: 300
   type: A
   value: 129.213.163.213
 
-# Weave, the Patchwork Labs IDP, on alastor.
 weave: # @patchworklabsorg/infra
   octodns:
-      cloudflare:
-        proxied: true
-  ttl: 120
+    cloudflare:
+      auto-ttl: true
+      proxied: true
+  ttl: 300
   type: A
   value: 129.213.163.213
 
@@ -137,8 +133,9 @@ weave-kyc-proposal: # PWL7A1CE1F3CB / jasper@patchworklabs.org
 
 www: # @patchworklabsorg/infra
   octodns:
-      cloudflare:
-        proxied: true
-  ttl: 120
+    cloudflare:
+      auto-ttl: true
+      proxied: true
+  ttl: 300
   type: CNAME
   value: 52fd2b2210caa11f.vercel-dns-017.com.
