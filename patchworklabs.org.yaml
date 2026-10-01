@@ -74,7 +74,7 @@ openpgpkey: # @patchworklabsorg/infra
   type: CNAME
   value: wkd.keys.openpgp.org.
 
-resend._domainkey.sandbox: # TODO owner unknown, added from Cloudflare on 2026-10-01
+resend._domainkey.sandbox: # PWL7A1CE1F3CB / jasper@patchworklabs.org
   ttl: 3600
   type: TXT
   value: p=MIGfMA0GCSqGSIb3DQEBAQUAA4GNADCBiQKBgQDxua1n4Hmk59q+hfD5XNVGh2izW+4sQZO6geNKIfiiAFkJV1yE2WJFZA+AJLIYGNbZ5YZTi89iWhodFCtOjynMHL0a0AvE/rA09NDp22b3J2pSxp2Xd0h5tRsmyL2yx8lCor4G9QCu6EkZz4jY3VXQOSQICnDnzMaBeV4hyebeYwIDAQAB
