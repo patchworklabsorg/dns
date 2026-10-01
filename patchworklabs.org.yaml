@@ -129,6 +129,15 @@ weave-kyc-proposal: # PWL7A1CE1F3CB / jasper@patchworklabs.org
   type: CNAME
   value: e4ec487349d24e0b.vercel-dns-017.com.
 
+# Weave staging, on alastor next to production.
+weave-staging: # @patchworklabsorg/weave
+  octodns:
+      cloudflare:
+        proxied: true
+  ttl: 120
+  type: A
+  value: 129.213.163.213
+
 www: # @patchworklabsorg/infra
   octodns:
       cloudflare:
