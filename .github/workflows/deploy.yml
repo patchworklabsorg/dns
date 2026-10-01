@@ -25,9 +25,8 @@ permissions:
 env:
   # octoDNS refuses a plan that deletes more than 30% of a zone, but only for a
   # zone that already has at least 10 records. MIN_EXISTING_RECORDS is a
-  # constant in octoDNS and cannot be configured. hackathon.help has fewer records
-  # than that, so octoDNS would delete every one of them without complaining.
-  # This is the guard for that case.
+  # constant in octoDNS and cannot be configured. A zone with fewer records than
+  # that has no guard from octoDNS at all. This is the guard for that case.
   MAX_DELETES: '3'
 
 # Never let two deploys apply to Cloudflare at the same time, and never cancel

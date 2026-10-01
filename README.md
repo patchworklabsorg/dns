@@ -16,7 +16,6 @@ access.
 | Domain | Zone file | Used for |
 |---|---|---|
 | `patchworklabs.org` | [`patchworklabs.org.yaml`](./patchworklabs.org.yaml) | Patchwork Labs and its projects |
-| `hackathon.help` | [`hackathon.help.yaml`](./hackathon.help.yaml) | Hackathon resources |
 
 ## Get a subdomain
 

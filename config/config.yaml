@@ -72,9 +72,3 @@ zones:
       - config
     targets:
       - cloudflare
-
-  hackathon.help.:
-    sources:
-      - config
-    targets:
-      - cloudflare
