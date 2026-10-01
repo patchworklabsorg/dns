@@ -95,6 +95,41 @@ openpgpkey: # @patchworklabsorg/infra
   type: CNAME
   value: wkd.keys.openpgp.org.
 
+# Weave (Patchwork Labs IDP) sends email through Resend from send.weave.
+resend._domainkey.weave: # @patchworklabsorg/infra
+  ttl: 3600
+  type: TXT
+  value: p=MIGfMA0GCSqGSIb3DQEBAQUAA4GNADCBiQKBgQCw686PBvLW3WwbVohPhkkxGXnkfIj4Qe+1h0t64WPqZcu70jF0SrbdfGU7yKgpnAA7/JvtkngYPfc85EGGHxrD83MG5DQ60vK9EPn5PExt4iYWwfMRSJ0solhKeu/8//YLvn7Lq7O+1HaFp566qH4RZ8xa5hENZy5rqEkmIpoHFQIDAQAB
+
+send.weave: # @patchworklabsorg/infra
+  - ttl: 3600
+    type: MX
+    value:
+      exchange: feedback-smtp.us-east-1.amazonses.com.
+      preference: 10
+  - ttl: 3600
+    type: TXT
+    value: v=spf1 include:amazonses.com ~all
+
+# Public "join our Slack" address. Weave redirects it to
+# https://weave.patchworklabs.org/slack (patchworklabsorg/weave#121).
+slack: # @patchworklabsorg/infra
+  octodns:
+      cloudflare:
+        proxied: true
+  ttl: 120
+  type: A
+  value: 129.213.163.213
+
+# Weave, the Patchwork Labs IDP, on alastor.
+weave: # @patchworklabsorg/infra
+  octodns:
+      cloudflare:
+        proxied: true
+  ttl: 120
+  type: A
+  value: 129.213.163.213
+
 weave-kyc-proposal: # PWL7A1CE1F3CB / jasper@patchworklabs.org
   ttl: 300
   type: CNAME
