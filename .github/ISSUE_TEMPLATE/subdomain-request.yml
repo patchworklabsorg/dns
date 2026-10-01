@@ -32,8 +32,8 @@ body:
     id: owner
     attributes:
       label: Who owns it?
-      description: The Patchwork email of whoever we should ask when it breaks.
-      placeholder: yourname@patchworklabs.org
+      description: The Patchwork id and email of whoever we should ask when it breaks.
+      placeholder: PWL0123456789 / yourname@patchworklabs.org
     validations:
       required: true
 

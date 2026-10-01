@@ -49,14 +49,24 @@ class HasOwnerTest(unittest.TestCase):
     def test_email(self):
         self.assertTrue(has_owner("ada@patchworklabs.org"))
 
-    def test_github_user(self):
-        self.assertTrue(has_owner("@jaspermayone"))
+    def test_pwl_id(self):
+        self.assertTrue(has_owner("PWL7A1CE1F3CB"))
+
+    def test_pwl_id_and_email(self):
+        self.assertTrue(has_owner("PWL7A1CE1F3CB / jasper@patchworklabs.org"))
+
+    def test_malformed_pwl_id(self):
+        self.assertFalse(has_owner("PWL123"))
+        self.assertFalse(has_owner("pwl7a1ce1f3cb"))
+
+    def test_github_user_is_not_an_owner(self):
+        self.assertFalse(has_owner("@jaspermayone"))
 
     def test_github_team(self):
         self.assertTrue(has_owner("@patchworklabsorg/infra"))
 
     def test_several(self):
-        self.assertTrue(has_owner("ada@patchworklabs.org, @grace"))
+        self.assertTrue(has_owner("ada@patchworklabs.org, @patchworklabsorg/infra"))
 
     def test_none(self):
         self.assertFalse(has_owner(None))
@@ -109,7 +119,7 @@ class CheckFileTest(unittest.TestCase):
         )
 
     def test_single_quoted_apex(self):
-        body = "---\n'': # @jaspermayone\n  ttl: 300\n  type: A\n  value: 192.0.2.1\n"
+        body = "---\n'': # PWL7A1CE1F3CB\n  ttl: 300\n  type: A\n  value: 192.0.2.1\n"
         self.assertEqual(self.check(body), [])
 
     def test_todo_owner_fails(self):
@@ -121,48 +131,48 @@ class CheckFileTest(unittest.TestCase):
 
     def test_low_ttl(self):
         self.assertOneError(
-            "---\napi: # @ada\n  ttl: 1\n  type: A\n  value: 192.0.2.1\n",
+            "---\napi: # ada@patchworklabs.org\n  ttl: 1\n  type: A\n  value: 192.0.2.1\n",
             "`api` A has ttl 1. The Cloudflare minimum is 120",
         )
 
     def test_low_ttl_inside_a_list(self):
         self.assertOneError(
-            "---\napi: # @ada\n  - ttl: 300\n    type: A\n    value: 192.0.2.1\n"
+            "---\napi: # ada@patchworklabs.org\n  - ttl: 300\n    type: A\n    value: 192.0.2.1\n"
             "  - ttl: 60\n    type: TXT\n    value: hello\n",
             "`api` TXT has ttl 60",
         )
 
     def test_apex_ns(self):
         self.assertOneError(
-            '---\n"": # @ada\n  ttl: 3600\n  type: NS\n  values:\n'
+            '---\n"": # ada@patchworklabs.org\n  ttl: 3600\n  type: NS\n  values:\n'
             "    - ns1.example.com.\n",
             "apex NS records belong to Cloudflare",
         )
 
     def test_ns_on_a_subdomain_is_fine(self):
         body = (
-            "---\nsub: # @ada\n  ttl: 3600\n  type: NS\n  values:\n"
+            "---\nsub: # ada@patchworklabs.org\n  ttl: 3600\n  type: NS\n  values:\n"
             "    - ns1.example.com.\n"
         )
         self.assertEqual(self.check(body), [])
 
     def test_meta_record(self):
         self.assertOneError(
-            "---\noctodns-meta: # @ada\n  ttl: 120\n  type: TXT\n  value: x\n",
+            "---\noctodns-meta: # ada@patchworklabs.org\n  ttl: 120\n  type: TXT\n  value: x\n",
             "`octodns-meta` is written by octoDNS",
         )
 
     def test_proxied_txt(self):
         self.assertOneError(
-            "---\napi: # @ada\n  octodns:\n    cloudflare:\n      proxied: true\n"
+            "---\napi: # ada@patchworklabs.org\n  octodns:\n    cloudflare:\n      proxied: true\n"
             "  ttl: 300\n  type: TXT\n  value: x\n",
             "`api` TXT cannot be proxied",
         )
 
     def test_duplicate_name(self):
         errors = self.check(
-            "---\napi: # @ada\n  ttl: 300\n  type: A\n  value: 192.0.2.1\n\n"
-            "api: # @ada\n  ttl: 300\n  type: A\n  value: 192.0.2.2\n"
+            "---\napi: # ada@patchworklabs.org\n  ttl: 300\n  type: A\n  value: 192.0.2.1\n\n"
+            "api: # ada@patchworklabs.org\n  ttl: 300\n  type: A\n  value: 192.0.2.2\n"
         )
         self.assertTrue(
             any("`api` is already defined on line 2" in e for e in errors), errors

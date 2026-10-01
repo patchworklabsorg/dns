@@ -37,9 +37,11 @@ Three rules decide whether it works:
 
 - **The name is the part before the domain.** `docs` becomes `docs.patchworklabs.org`.
 - **A `CNAME` value ends with a dot.** An `A` or `AAAA` value does not.
-- **Every record needs an owner.** Put an email or a GitHub handle in a
-  comment on the same line as the name, for example `# ada@patchworklabs.org`
-  or `# @patchworklabsorg/infra`. We use it to find out who to ask when the
+- **Every record needs an owner.** Put an email, a Patchwork id, or both in a
+  comment on the same line as the name, for example
+  `# PWL0123456789 / ada@patchworklabs.org`. A record that a team owns can
+  name a GitHub team instead, for example `# @patchworklabsorg/infra`. A
+  personal GitHub handle does not count. We use it to find out who to ask when the
   record breaks. List more than one owner if more than one person is
   responsible. The `dns records` check fails on a record without an owner.
 

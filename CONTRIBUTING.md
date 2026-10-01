@@ -12,7 +12,8 @@ Thank you for helping run the Patchwork Labs DNS. This file covers the rules. Th
    it. The order is natural, so `ns2` comes before `ns10`, and inside a record
    `octodns` comes before `ttl`, `type` and `value`. Run `./bin/validate`.
 4. Give every record an owner in a comment on the same line as its name. Use
-   an email or a GitHub handle. The `dns records` check enforces it.
+   an email, a Patchwork id (`PWL...`), or both. The `dns records` check
+   enforces it.
 5. Read the `octoDNS plan` comment on your pull request before you ask for a
    review. It is the exact list of changes the merge will make.
 6. Answer review comments on the same pull request. Do not close it and open a

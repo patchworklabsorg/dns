@@ -8,7 +8,7 @@
 Every record needs an owner in a comment on the same line as its name, so we
 know who to ask when it breaks. For example:
 
-    docs: # yourname@patchworklabs.org
+    docs: # PWL0123456789 / yourname@patchworklabs.org
       - ttl: 600
         type: CNAME
         value: docs-site.netlify.app.
@@ -17,8 +17,8 @@ know who to ask when it breaks. For example:
 ## Checklist
 
 - [ ] The record is for a Patchwork project, event, or service.
-- [ ] Every record I added or changed has an owner in a comment: an email or a
-      GitHub handle.
+- [ ] Every record I added or changed has an owner in a comment: an email, a
+      Patchwork id (`PWL...`), or both.
 - [ ] `./bin/validate` passes, so the records are in the order octoDNS wants.
 - [ ] CNAME values end with a dot. A and AAAA values do not.
 - [ ] I have read the `octoDNS plan` comment on this pull request and it

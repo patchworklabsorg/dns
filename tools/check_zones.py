@@ -5,9 +5,11 @@
 rules of this repository, so this script checks them:
 
 1. Every record has an owner in a comment on the same line as its name. An
-   owner is an email address or a GitHub handle, for example
-   ``# ada@patchworklabs.org`` or ``# @patchworklabsorg/infra``. A
-   ``TODO owner unknown`` comment from the nightly sync is not an owner.
+   owner is an email address or a Patchwork id, or both, for example
+   ``# PWL7A1CE1F3CB / ada@patchworklabs.org``. A record that a team owns can
+   name a GitHub team instead, for example ``# @patchworklabsorg/infra``. A
+   personal GitHub handle is not an owner. A ``TODO owner unknown`` comment
+   from the nightly sync is not an owner.
 2. Every TTL is at least the Cloudflare minimum of 120 seconds. A lower value
    is silently raised by Cloudflare, so the zone file would never match it.
 3. No zone file holds the apex NS records. Cloudflare owns them.
@@ -42,7 +44,10 @@ _TOP_LEVEL = re.compile(
     r"""(?:\s+(?P<rest>.*))?$"""
 )
 _EMAIL = re.compile(r"[\w.+-]+@[\w-]+(?:\.[\w-]+)+")
-_HANDLE = re.compile(r"(?:^|[\s,])@[A-Za-z0-9](?:[A-Za-z0-9-]*)(?:/[\w.-]+)?")
+# A Patchwork id: `PWL` and ten upper case hex digits.
+_PWL_ID = re.compile(r"\bPWL[0-9A-F]{10}\b")
+# A GitHub team, `@org/team`. A personal handle does not count.
+_TEAM = re.compile(r"(?:^|[\s,/])@[A-Za-z0-9][A-Za-z0-9-]*/[\w.-]+")
 
 
 def _owner_comment(rest):
@@ -59,7 +64,9 @@ def has_owner(comment):
     """True when the comment names at least one owner."""
     if not comment or comment.lower().startswith("todo"):
         return False
-    return bool(_EMAIL.search(comment) or _HANDLE.search(comment))
+    return bool(
+        _EMAIL.search(comment) or _PWL_ID.search(comment) or _TEAM.search(comment)
+    )
 
 
 def _top_level_keys(text):
@@ -101,7 +108,7 @@ def check_file(path):
         if not has_owner(comment):
             errors.append(
                 f"{path.name}:{number}: `{name or '@'}` has no owner. Add an "
-                f"email or a GitHub handle in a comment on the same line"
+                f"email, a Patchwork id or both in a comment on the same line"
             )
 
     data = yaml.safe_load(text) or {}
