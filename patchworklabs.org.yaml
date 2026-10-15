@@ -84,6 +84,16 @@ quilt: # @patchworklabsorg/infra
   type: A
   value: 129.213.163.213
 
+# Quilt staging, on alastor next to production (patchworklabsorg/infra
+# nixosModules.quilt-alastor, staging). Mercury sandbox only.
+quilt-staging: # @patchworklabsorg/infra
+  octodns:
+      cloudflare:
+        proxied: true
+  ttl: 120
+  type: A
+  value: 129.213.163.213
+
 resend._domainkey.sandbox: # PWL7A1CE1F3CB / jasper@patchworklabs.org
   ttl: 3600
   type: TXT
