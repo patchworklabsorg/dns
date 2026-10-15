@@ -74,6 +74,16 @@ openpgpkey: # @patchworklabsorg/infra
   type: CNAME
   value: wkd.keys.openpgp.org.
 
+# Quilt, the Patchwork funding and records system, on alastor
+# (patchworklabsorg/infra nixosModules.quilt-alastor).
+quilt: # @patchworklabsorg/infra
+  octodns:
+      cloudflare:
+        proxied: true
+  ttl: 120
+  type: A
+  value: 129.213.163.213
+
 resend._domainkey.sandbox: # PWL7A1CE1F3CB / jasper@patchworklabs.org
   ttl: 3600
   type: TXT
