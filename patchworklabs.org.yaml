@@ -64,6 +64,16 @@ cio._domainkey.cio160924.cio: # PWL7A1CE1F3CB / jasper@patchworklabs.org
   type: TXT
   value: k=rsa\; p=MIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKCAQEA0eVU0HCCkUK5FPCvMoX03lgTqTNWEkYA61pKilwmMif+B/L+AlLqQVywt22RLAWCpiJv3hRUFi4UmdXbAZzWjhVY5Mem8F1XqWvu6Xv1yAIC08tX+3vMH+5gdp/SJ8I1z2tmJXNMYbeAC3jK6uxOoY+Mcs63VLtstVJqqmFfJv454D4A8m5ckqb/ltkf6+dlxpC5mHx0IAf7ybek4fCKSlSIwCRI3M1rX2Jhh3KpvQkce4x53Hinj14t5w5u+eCdNUljUuyjjZBq1BMQn65p0FeJ4A6y8jxQXJM44Wajtd+zuDFK1AL8rrbFTgtkezurZvZCSZQSa1UfUkIegAbx2wIDAQAB
 
+# Short links to external forms, e.g. /ganymede. Traefik on alastor redirects
+# each path (patchworklabsorg/infra nixosModules.forms-alastor).
+forms: # adam.sidwa@patchworklabs.org
+  octodns:
+      cloudflare:
+        proxied: true
+  ttl: 120
+  type: A
+  value: 129.213.163.213
+
 # Google Workspace DKIM authentication
 google._domainkey: # @patchworklabsorg/infra
   type: TXT
