@@ -135,6 +135,16 @@ slack: # @patchworklabsorg/weave
   type: A
   value: 129.213.163.213
 
+# The thimble WireGuard endpoint (patchworklabsorg/infra). WireGuard is UDP,
+# so Cloudflare cannot proxy it.
+vpn: # @patchworklabsorg/infra
+  octodns:
+      cloudflare:
+        proxied: false
+  ttl: 300
+  type: A
+  value: 69.54.28.49
+
 # Weave, the Patchwork Labs IDP, on alastor.
 weave: # @patchworklabsorg/weave
   octodns:
