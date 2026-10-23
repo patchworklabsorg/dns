@@ -87,6 +87,22 @@ krater-storage: # adam.sidwa@patchworklabs.org
   type: A
   value: 129.213.163.213
 
+krater-staging: # adam.sidwa@patchworklabs.org
+  octodns:
+      cloudflare:
+        proxied: true
+  ttl: 120
+  type: A
+  value: 129.213.163.213
+
+krater-storage-staging: # adam.sidwa@patchworklabs.org
+  octodns:
+      cloudflare:
+        proxied: true
+  ttl: 120
+  type: A
+  value: 129.213.163.213
+
 openpgpkey: # @patchworklabsorg/infra
   ttl: 300
   type: CNAME
