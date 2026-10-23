@@ -1,3 +1,8 @@
+# CAA: the CAs that can issue certificates for the zone. A CAA record also covers
+# every name below it. Let's Encrypt: Vercel (www, weave-kyc-proposal), the
+# thimble VPN (vpn) and the Traefik origin certificates on alastor. The other
+# three: Cloudflare Universal SSL for the proxied names. iodef is where a CA
+# reports a refused request.
 "": # @patchworklabsorg/infra
   - ttl: 120
     type: MX
@@ -12,6 +17,24 @@
         preference: 10
       - exchange: alt4.aspmx.l.google.com.
         preference: 10
+  - ttl: 3600
+    type: CAA
+    values:
+      - flags: 0
+        tag: iodef
+        value: mailto:security@patchworklabs.org
+      - flags: 0
+        tag: issue
+        value: letsencrypt.org
+      - flags: 0
+        tag: issue
+        value: pki.goog
+      - flags: 0
+        tag: issue
+        value: sectigo.com
+      - flags: 0
+        tag: issue
+        value: ssl.com
   - ttl: 120
     type: TXT
     values:
