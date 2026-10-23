@@ -169,6 +169,136 @@ class CheckFileTest(unittest.TestCase):
             "`api` TXT cannot be proxied",
         )
 
+    def caa(self, name, *entries):
+        """A zone file with one CAA record of (flags, tag, value) entries."""
+        values = "".join(
+            f"    - flags: {flags}\n      tag: {tag}\n      value: {value}\n"
+            for flags, tag, value in entries
+        )
+        return f"---\n{name}: # ada@patchworklabs.org\n  ttl: 3600\n  type: CAA\n  values:\n{values}"
+
+    def test_good_caa(self):
+        body = self.caa(
+            '""',
+            (0, "iodef", "mailto:security@patchworklabs.org"),
+            (0, "issue", "letsencrypt.org"),
+            (0, "issue", "pki.goog"),
+            (128, "issuewild", "ssl.com"),
+        )
+        self.assertEqual(self.check(body), [])
+
+    def test_caa_single_value(self):
+        body = (
+            '---\n"": # ada@patchworklabs.org\n  ttl: 3600\n  type: CAA\n  value:\n'
+            "    flags: 0\n    tag: issue\n    value: letsencrypt.org\n"
+        )
+        self.assertEqual(self.check(body), [])
+
+    def test_caa_inside_a_list(self):
+        body = (
+            '---\n"": # ada@patchworklabs.org\n  - ttl: 120\n    type: A\n'
+            "    value: 192.0.2.1\n  - ttl: 3600\n    type: CAA\n    values:\n"
+            "      - flags: 0\n        tag: issue\n        value: letsencrypt.com\n"
+        )
+        errors = self.check(body)
+        self.assertTrue(any("`letsencrypt.com` is not a known CA" in e for e in errors), errors)
+
+    def test_caa_unknown_ca(self):
+        errors = self.check(
+            self.caa('""', (0, "issue", "letsencrypt.org"), (0, "issue", "letsencrypt.com"))
+        )
+        self.assertEqual(len(errors), 1, errors)
+        self.assertIn("`@` CAA issue `letsencrypt.com` is not a known CA", errors[0])
+
+    def test_caa_parameters_after_the_ca(self):
+        body = self.caa('""', (0, "issue", '"letsencrypt.org; validationmethods=dns-01"'))
+        self.assertEqual(self.check(body), [])
+
+    def test_caa_unknown_issuewild_ca(self):
+        self.assertOneError(
+            self.caa("sub", (0, "issuewild", "example-ca.com")),
+            "`sub` CAA issuewild `example-ca.com` is not a known CA",
+        )
+
+    def test_caa_empty_ca_on_a_subdomain(self):
+        self.assertEqual(self.check(self.caa("sub", (0, "issue", '";"'))), [])
+
+    def test_caa_bad_tag(self):
+        self.assertOneError(
+            self.caa("sub", (0, "isue", "letsencrypt.org")),
+            "`sub` CAA has tag `isue`",
+        )
+
+    def test_caa_bad_flags(self):
+        self.assertOneError(
+            self.caa("sub", (1, "issue", "letsencrypt.org")),
+            "`sub` CAA has flags 1",
+        )
+
+    def test_caa_bad_iodef(self):
+        self.assertOneError(
+            self.caa("sub", (0, "iodef", "security@patchworklabs.org")),
+            "iodef `security@patchworklabs.org` must start with mailto: or https://",
+        )
+
+    def test_apex_caa_without_letsencrypt(self):
+        self.assertOneError(
+            self.caa('""', (0, "issue", "pki.goog")),
+            "the apex CAA records do not allow letsencrypt.org",
+        )
+
+    def test_apex_caa_with_only_issuewild_letsencrypt(self):
+        self.assertOneError(
+            self.caa('""', (0, "issue", "pki.goog"), (0, "issuewild", "letsencrypt.org")),
+            "the apex CAA records do not allow letsencrypt.org",
+        )
+
+    def test_apex_caa_without_issue_allows_every_ca(self):
+        body = self.caa(
+            '""',
+            (0, "iodef", "mailto:security@patchworklabs.org"),
+            (0, "issuewild", "pki.goog"),
+        )
+        self.assertEqual(self.check(body), [])
+
+    def test_caa_ca_case_and_trailing_dot(self):
+        body = self.caa('""', (0, "issue", "LetsEncrypt.org."), (0, "issue", "PKI.goog"))
+        self.assertEqual(self.check(body), [])
+
+    def test_caa_iodef_scheme_case(self):
+        self.assertEqual(self.check(self.caa("sub", (0, "iodef", "MAILTO:a@patchworklabs.org"))), [])
+
+    def test_caa_missing_flags(self):
+        body = (
+            "---\nsub: # ada@patchworklabs.org\n  ttl: 3600\n  type: CAA\n  value:\n"
+            "    tag: issue\n    value: letsencrypt.org\n"
+        )
+        self.assertEqual(self.check(body), [])
+
+    def test_caa_flags_that_are_not_a_number(self):
+        for flags in ('"0"', "[0]", "{}", "true"):
+            with self.subTest(flags=flags):
+                self.assertOneError(
+                    self.caa("sub", (flags, "issue", "letsencrypt.org")),
+                    "`sub` CAA has flags",
+                )
+
+    def test_caa_values_as_one_string(self):
+        body = (
+            "---\nsub: # ada@patchworklabs.org\n  ttl: 3600\n  type: CAA\n"
+            "  values: letsencrypt.org\n"
+        )
+        self.assertOneError(body, "`sub` CAA value is not a mapping")
+
+    def test_apex_caa_that_forbids_every_ca(self):
+        self.assertOneError(
+            self.caa('""', (0, "issue", '";"')),
+            "the apex CAA records do not allow letsencrypt.org",
+        )
+
+    def test_subdomain_caa_does_not_need_letsencrypt(self):
+        self.assertEqual(self.check(self.caa("sub", (0, "issue", "pki.goog"))), [])
+
     def test_duplicate_name(self):
         errors = self.check(
             "---\napi: # ada@patchworklabs.org\n  ttl: 300\n  type: A\n  value: 192.0.2.1\n\n"
