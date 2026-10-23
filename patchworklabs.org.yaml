@@ -113,6 +113,10 @@ krater-staging: # @patchworklabsorg/infra
   value: 129.213.163.213
 
 # Krater staging's S3 storage (SeaweedFS on weft), behind alastor's edge.
+# Proxied on purpose: staging stores small gallery screenshots, and Compute
+# (large checkpoints) is off. Cloudflare caps a request body at 100 MB, so
+# turn the proxy off or use small multipart parts before Compute needs more.
+# No cache or Rocket Loader rule may apply here: they break S3 signatures.
 krater-staging-storage: # @patchworklabsorg/infra
   octodns:
       cloudflare:
