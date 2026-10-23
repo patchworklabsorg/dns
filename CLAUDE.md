@@ -13,7 +13,7 @@ The repository uses OctoDNS with Cloudflare as the DNS provider and YAML configu
 - **Configuration**: `config/config.yaml` defines providers, processors and zone mappings. `enforce_order` with `order_mode: natural` is on.
 - **DNS Records**: The zone file `patchworklabs.org.yaml` contains DNS record definitions. Every record needs an owner (an email, a Patchwork id such as `PWL7A1CE1F3CB`, or both; a GitHub team for team-owned records) in a comment on the same line as its name.
 - **Scripts**: Shell scripts in `bin/` handle DNS operations. They read the zone list from `config/config.yaml` through `bin/zones`.
-- **Tools**: `tools/merge_live.py` merges live Cloudflare state back into the zone files and keeps comments. `tools/check_zones.py` checks the repository rules (owner comment on every record, TTL of 120 or more, no apex NS, no `octodns-meta`, proxy only on A/AAAA/CNAME). `./bin/validate` runs it. Tests are in `tools/test_*.py`.
+- **Tools**: `tools/merge_live.py` merges live Cloudflare state back into the zone files and keeps comments. `tools/check_zones.py` checks the repository rules (owner comment on every record, TTL of 120 or more, no apex NS, no `octodns-meta`, proxy only on A/AAAA/CNAME, CAA names only known CAs and an apex `issue` list includes `letsencrypt.org`). `./bin/validate` runs it. Tests are in `tools/test_*.py`.
 - **Workflows**: `validate` (no secrets), `plan` (`pull_request_target`, posts the plan and checks drift), `deploy` (push to `main`), `sync-from-cloudflare` (nightly).
 - **Dependencies**: Python dependencies pinned in `requirements.txt`.
 

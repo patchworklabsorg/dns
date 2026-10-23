@@ -18,6 +18,10 @@ rules of this repository, so this script checks them:
 6. Every zone in ``config/config.yaml`` has a zone file, and every YAML file
    at the repository root belongs to a zone.
 7. No record name appears twice in one file.
+8. Every CAA record names a CA in ``KNOWN_CAS``, uses a known tag and flag,
+   and gives ``iodef`` a ``mailto:`` or ``https://`` address. If the apex has
+   CAA ``issue`` records, they include ``letsencrypt.org``. A typo such
+   as ``letsencrypt.com`` then fails here, not at the next certificate renewal.
 
 Usage:
 
@@ -37,6 +41,19 @@ import yaml
 MIN_TTL = 120
 PROXIABLE = {"A", "AAAA", "CNAME"}
 META_RECORD = "octodns-meta"
+# The CAs that a CAA `issue` or `issuewild` record can name. Add a CA here in
+# the same pull request that first allows it in a zone file.
+KNOWN_CAS = {
+    "letsencrypt.org",  # Vercel, Traefik on alastor, the thimble VPN
+    "pki.goog",  # Cloudflare Universal SSL
+    "sectigo.com",  # Cloudflare backup certificates
+    "ssl.com",  # Cloudflare Universal SSL
+}
+# Vercel, Traefik on alastor and the thimble VPN get certificates from it, so
+# an apex CAA set without it stops their renewals.
+REQUIRED_APEX_CA = "letsencrypt.org"
+CAA_TAGS = {"issue", "issuewild", "iodef"}
+CAA_FLAGS = {0, 128}
 
 # A top level key: `name:`, `"name":` or `'name':`, then an optional comment.
 _TOP_LEVEL = re.compile(
@@ -91,6 +108,58 @@ def _records(value):
     return [value]
 
 
+def _record_values(record):
+    values = record["values"] if "values" in record else record.get("value")
+    if values is None:
+        return []
+    return values if isinstance(values, list) else [values]
+
+
+def _caa_ca(value):
+    """The CA domain of a CAA issue or issuewild value, in lower case.
+
+    The parameters after `;` are dropped. DNS names do not depend on case, and
+    a trailing dot is the same name.
+    """
+    return str(value).split(";")[0].strip().strip('"').rstrip(".").lower()
+
+
+def _caa_errors(where, label, record):
+    """Return the errors for one CAA record."""
+    errors = []
+    for caa in _record_values(record):
+        if not isinstance(caa, dict):
+            errors.append(f"{where}: `{label}` CAA value is not a mapping")
+            continue
+        tag = caa.get("tag")
+        value = str(caa.get("value", ""))
+        flags = caa.get("flags", 0)
+        if isinstance(flags, bool) or not isinstance(flags, int) or flags not in CAA_FLAGS:
+            errors.append(
+                f"{where}: `{label}` CAA has flags {flags!r}. Use the number 0 or 128"
+            )
+        if tag not in CAA_TAGS:
+            errors.append(
+                f"{where}: `{label}` CAA has tag `{tag}`. Use one of "
+                f"{', '.join(sorted(CAA_TAGS))}"
+            )
+        elif tag == "iodef":
+            if not value.lower().startswith(("mailto:", "https://")):
+                errors.append(
+                    f"{where}: `{label}` CAA iodef `{value}` must start with "
+                    f"mailto: or https://"
+                )
+        else:
+            # An empty CA (`;`) is allowed: it means that no CA can issue.
+            ca = _caa_ca(value)
+            if ca and ca not in KNOWN_CAS:
+                errors.append(
+                    f"{where}: `{label}` CAA {tag} `{ca}` is not a known CA. "
+                    f"Fix the name or add it to KNOWN_CAS in tools/check_zones.py"
+                )
+    return errors
+
+
 def check_file(path):
     """Return a list of `file:line: message` strings for one zone file."""
     text = path.read_text()
@@ -118,6 +187,7 @@ def check_file(path):
     for name, value in data.items():
         number = lines.get(name, 1)
         label = name or "@"
+        apex_cas = None
         if name == META_RECORD:
             errors.append(
                 f"{path.name}:{number}: `{META_RECORD}` is written by octoDNS. "
@@ -138,6 +208,14 @@ def check_file(path):
                     f"{path.name}:{number}: the apex NS records belong to "
                     f"Cloudflare. Remove them from the zone file"
                 )
+            if rtype == "CAA":
+                errors.extend(_caa_errors(f"{path.name}:{number}", label, record))
+                if name == "":
+                    apex_cas = (apex_cas or set()) | {
+                        _caa_ca(caa.get("value", ""))
+                        for caa in _record_values(record)
+                        if isinstance(caa, dict) and caa.get("tag") == "issue"
+                    }
             octodns = record.get("octodns") or {}
             proxied = (octodns.get("cloudflare") or {}).get("proxied")
             if proxied and rtype not in PROXIABLE:
@@ -145,6 +223,14 @@ def check_file(path):
                     f"{path.name}:{number}: `{label}` {rtype} cannot be "
                     f"proxied. Only {', '.join(sorted(PROXIABLE))} can"
                 )
+        # Without an `issue` property every CA can issue (RFC 8659), so only an
+        # `issue` list that leaves Let's Encrypt out is a problem.
+        if apex_cas and REQUIRED_APEX_CA not in apex_cas:
+            errors.append(
+                f"{path.name}:{number}: the apex CAA records do not allow "
+                f"{REQUIRED_APEX_CA}. Vercel, Traefik on alastor and the thimble "
+                f"VPN could not renew their certificates"
+            )
     return errors
 
 

@@ -71,6 +71,13 @@ It fails when:
 - A zone in `config/config.yaml` has no zone file, or a YAML file at the
   repository root is not a zone.
 - One name appears twice in one file.
+- A CAA record names a CA that is not in `KNOWN_CAS` in
+  `tools/check_zones.py`, has a tag other than `issue`, `issuewild` or
+  `iodef`, or has flags other than 0 or 128. An `iodef` value must start with
+  `mailto:` or `https://`.
+- The apex has CAA `issue` records and they do not include
+  `letsencrypt.org`. Vercel, Traefik on alastor and the thimble VPN get their
+  certificates from Let's Encrypt.
 
 ### 2. Open a pull request
 
