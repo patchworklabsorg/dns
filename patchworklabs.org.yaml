@@ -215,6 +215,26 @@ slack: # @patchworklabsorg/weave
   type: A
   value: 129.213.163.213
 
+# Stash, the Patchwork archive, on hank behind alastor (patchworklabsorg/infra
+# nixosModules.edge-alastor). Proxied: pages and artifact downloads only.
+stash: # @patchworklabsorg/infra
+  octodns:
+      cloudflare:
+        proxied: true
+  ttl: 120
+  type: A
+  value: 129.213.163.213
+
+# Stash staging, on hank next to production (patchworklabsorg/infra
+# hosts/hank/stash.nix, staging). Weave staging and the staging database only.
+stash-staging: # @patchworklabsorg/infra
+  octodns:
+      cloudflare:
+        proxied: true
+  ttl: 120
+  type: A
+  value: 129.213.163.213
+
 # The thimble WireGuard endpoint (patchworklabsorg/infra). WireGuard is UDP,
 # so Cloudflare cannot proxy it.
 vpn: # @patchworklabsorg/infra
