@@ -200,6 +200,17 @@ selvage: # @patchworklabsorg/infra
   type: A
   value: 129.213.163.213
 
+# Selvage staging, on twill next to production (patchworklabsorg/infra
+# hosts/twill/selvage.nix, staging). The staging Slack workspace, Weave staging
+# and the staging databases only.
+selvage-staging: # @patchworklabsorg/infra
+  octodns:
+      cloudflare:
+        proxied: true
+  ttl: 120
+  type: A
+  value: 129.213.163.213
+
 send.sandbox: # PWL7A1CE1F3CB / jasper@patchworklabs.org
   ttl: 3600
   type: CNAME
